@@ -1,0 +1,76 @@
+##########################################################
+# Home Assistant Core Runtime Files
+##########################################################
+
+# Main secrets file (NEVER commit)
+secrets.yaml
+
+# Home Assistant storage directory (auto-generated)
+.storage/
+
+# Databases
+home-assistant_v2.db
+home-assistant_v2.db-shm
+home-assistant_v2.db-wal
+
+# Backups
+backups/
+*.tar
+
+# Logs
+home-assistant.log
+home-assistant.log.*
+OZW_Log.txt
+
+##########################################################
+# Temporary / Cache / Runtime
+##########################################################
+
+*.log
+*.tmp
+*.pid
+*.db
+*.sqlite
+*.sqlite3
+__pycache__/
+*.pyc
+
+##########################################################
+# SSL / Certificates
+##########################################################
+
+ssl/
+*.pem
+*.key
+*.crt
+
+##########################################################
+# Node-RED (if installed as add-on)
+##########################################################
+
+node-red/node_modules/
+node-red/.config.runtime.json
+
+##########################################################
+# VS Code / Editor Files
+##########################################################
+
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+##########################################################
+# Python Virtual Environments (if developing custom components)
+##########################################################
+
+venv/
+.env/
+.envrc
+
+##########################################################
+# Docker (if you test HA in container locally)
+##########################################################
+
+docker-compose.override.yml
