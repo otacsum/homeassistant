@@ -1,0 +1,22 @@
+bedroom_light_level:
+  sequence:
+    - alias: "Turn on or off based on brightness"
+      if:
+        - "{{ brightness | int > 0 }}"
+      then:
+        - alias: "Turn on ceiling light"
+          action: switch.turn_on
+          target:
+            entity_id: switch.bedroom_dimmer_fan_light
+
+        - alias: "Set brightness"
+          action: number.set_value
+          target:
+            entity_id: number.bedroom_dimmer_fan_bright_value
+          data:
+            value: "{{ (brightness / 255) * 1000 }}"
+      else:
+        - alias: "Turn off ceiling light"
+          action: switch.turn_off
+          target:
+            entity_id: switch.bedroom_dimmer_fan_light

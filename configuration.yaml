@@ -9,3 +9,28 @@ frontend:
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
+
+template:
+- light:
+  - unique_id: bedroom_custom_dimmer
+    name: Bedroom Dimmer
+    default_entity_id: light.bedroom_dimmer
+
+    level: '{{ ((states(''number.bedroom_dimmer_fan_bright_value'') | float) / 1000
+      * 255) | int }}'
+    state: '{{ is_state(''switch.bedroom_dimmer_fan_light'', ''on'') }}'
+
+    turn_on:
+      action: switch.turn_on
+      target:
+        entity_id: switch.bedroom_dimmer_fan_light
+
+    turn_off:
+      action: switch.turn_off
+      target:
+        entity_id: switch.bedroom_dimmer_fan_light
+      
+    set_level:
+      action: script.bedroom_light_level
+      data:
+        brightness: '{{brightness}}'
