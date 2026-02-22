@@ -35,6 +35,14 @@ template:
       data:
         brightness: '{{brightness}}'
 
+- button:
+  - unique_id: cat_litter_manual_clean
+    name: Clean Cat Litter
+    press:
+      action: button.press
+      target:
+        entity_id: button.cat_litter_manual_clean
+
 - fan:
   - unique_id: bedroom_custom_fan
     name: Bedroom Fan
