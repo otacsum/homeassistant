@@ -34,3 +34,22 @@ template:
       action: script.bedroom_light_level
       data:
         brightness: '{{brightness}}'
+
+- fan:
+  - unique_id: bedroom_custom_fan
+    name: Bedroom Fan
+    speed_count: 4
+    state: '{{ is_state(''switch.bedroom_dimmer_fan_switch_fan'', ''on'') }}'
+    percentage: '{{ state_attr(''fan.bedroom_overhead_switches'', ''percentage'') | int(0) }}'
+    turn_on:
+      action: switch.turn_on
+      target:
+        entity_id: switch.bedroom_dimmer_fan_switch_fan
+    turn_off:
+      action: switch.turn_off
+      target:
+        entity_id: switch.bedroom_dimmer_fan_switch_fan
+    set_percentage:
+      action: script.bedroom_fan_speed
+      data:
+        percentage: '{{percentage}}'

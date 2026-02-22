@@ -20,3 +20,26 @@ bedroom_light_level:
           action: switch.turn_off
           target:
             entity_id: switch.bedroom_dimmer_fan_light
+
+bedroom_fan_speed:
+  sequence:
+    - alias: "Turn on or off based on percentage"
+      if:
+        - "{{ percentage | int > 0 }}"
+      then:
+        - alias: "Turn on fan"
+          action: switch.turn_on
+          target:
+            entity_id: switch.bedroom_dimmer_fan_switch_fan
+
+        - alias: "Set fan speed"
+          action: fan.set_percentage
+          target:
+            entity_id: fan.bedroom_overhead_switches
+          data:
+            percentage: "{{ percentage }}"
+      else:
+        - alias: "Turn off fan"
+          action: switch.turn_off
+          target:
+            entity_id: switch.bedroom_dimmer_fan_switch_fan
