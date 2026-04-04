@@ -61,3 +61,15 @@ template:
       action: script.bedroom_fan_speed
       data:
         percentage: '{{percentage}}'
+
+input_boolean:
+  bedroom_sunrise_start:
+    name: Bedroom Sunrise Start
+    icon: mdi:weather-sunny-alert
+
+input_number:
+  bedroom_sunrise_expected_brightness:
+    name: Bedroom Sunrise Expected Brightness
+    min: 0
+    max: 1000
+    step: 1
