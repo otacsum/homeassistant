@@ -77,6 +77,12 @@
             }
         },
         "button": {
+            "factory_reset": {
+                "name": "Werksreset"
+            },
+            "manual_clean": {
+                "name": "Manuelle Reinigung"
+            },
             "reset_duster_cloth": {
                 "name": "Staubtuch zur\u00fccksetzen"
             },
@@ -111,6 +117,12 @@
             }
         },
         "event": {
+            "doorbell_message": {
+                "name": "T\u00fcrklingelnachricht"
+            },
+            "doorbell_picture": {
+                "name": "T\u00fcrklingelbild"
+            },
             "numbered_button": {
                 "name": "Taste {button_number}",
                 "state_attributes": {
@@ -165,6 +177,9 @@
             },
             "cook_time": {
                 "name": "Kochzeit"
+            },
+            "delay_clean_time": {
+                "name": "Reinigungszeit verz\u00f6gern"
             },
             "down_delay": {
                 "name": "Abw\u00e4rtsverz\u00f6gerung"
@@ -475,14 +490,23 @@
                 }
             },
             "relay_status": {
-                "name": "Verhalten beim Einschalten",
+                "name": "Wiedereinschaltverhalten",
                 "state": {
-                    "last": "Letzten Zustand merken",
-                    "memory": "Letzten Zustand merken",
+                    "last": "Letzter Zustand",
+                    "memory": "Letzter Zustand",
                     "off": "Aus",
                     "on": "Ein",
                     "power_off": "Aus",
                     "power_on": "Ein"
+                }
+            },
+            "siren_mode": {
+                "name": "Sirenenmodus",
+                "state": {
+                    "alarm_light": "Licht",
+                    "alarm_sound": "Ton",
+                    "alarm_sound_light": "Ton und Licht",
+                    "normal": "Normal"
                 }
             },
             "target_humidity": {
@@ -512,10 +536,10 @@
                 "name": "Modus",
                 "state": {
                     "bow": "Bogen",
-                    "chargego": "Zur\u00fcck zur Dockingstation",
+                    "chargego": "Zur\u00fcck zur Ladestation",
                     "left_bow": "Bogen links",
                     "left_spiral": "Spirale links",
-                    "mop": "Mopp",
+                    "mop": "Wischen",
                     "part": "Teil",
                     "partial_bow": "Bogen teilweise",
                     "pick_zone": "Zone ausw\u00e4hlen",
@@ -599,6 +623,17 @@
             "carbon_monoxide": {
                 "name": "Kohlenmonoxid"
             },
+            "cat_litter_box_status": {
+                "name": "Status",
+                "state": {
+                    "clean": "Reinigung",
+                    "empty": "Entleerung",
+                    "level": "Nivellierung",
+                    "sleep": "Ruhezustand",
+                    "standby": "Standby",
+                    "uv": "Desinfektion"
+                }
+            },
             "cat_weight": {
                 "name": "Katzengewicht"
             },
@@ -627,7 +662,7 @@
                 "name": "Lebensdauer des Staubtuchs"
             },
             "excretion_time_day": {
-                "name": "Ausscheidungszeit (Tag)"
+                "name": "Ausscheidungsdauer"
             },
             "excretion_times_day": {
                 "name": "Ausscheidungszeiten (Tag)"
@@ -885,6 +920,9 @@
             },
             "arm_beep": {
                 "name": "Signalton beim Aktivieren"
+            },
+            "auto_clean": {
+                "name": "Automatische Reinigung"
             },
             "battery_lock": {
                 "name": "Batterieschloss"

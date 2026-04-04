@@ -2,6 +2,10 @@ from __future__ import annotations
 import copy
 from typing import Any
 import custom_components.xtend_tuya.multi_manager.multi_manager as mm
+from ...const import (
+    LOGGER,  # noqa: F401
+    XTDeviceWatcherCategory,  # noqa: F401
+)
 
 
 class SourceCodeCounter:
@@ -14,6 +18,7 @@ class MultiSourceCodeCounter:
     def __init__(self) -> None:
         self.source_counter_list: list[SourceCodeCounter] = []
         self.last_allowed_source = None
+        self.last_update_time = 0
 
     def register_source_message(self, source: str):
         source_counter_found = False
@@ -43,9 +48,14 @@ class MultiSourceCodeCounter:
 
         if (highest_source_count - last_allowed_source_count) > 1:
             self.last_allowed_source = highest_source
-            return highest_source
-        else:
-            return self.last_allowed_source
+        
+        return self.last_allowed_source
+
+    def update_last_update_time(self, update_time: int) -> bool:
+        if update_time <= self.last_update_time:
+            return False
+        self.last_update_time = update_time
+        return True
 
 
 class MultiSourceHandler:
@@ -98,19 +108,36 @@ class MultiSourceHandler:
             return status_list
 
         i = 0
-        for item in status_list:
+        for item in status_in:
             code, _, _, result_ok = self.multi_manager._read_code_dpid_value_from_state(
                 dev_id, item, False, True
             )
             if not result_ok or code is None:
+                i += 1
                 continue
 
+            update_time_valid: bool | None = None
             for virtual_state in virtual_states:
                 if code == virtual_state.key:
                     self._prepare_structure_for_code(dev_id, code)
-                    if not self._is_allowed_source_for_code(
-                        dev_id, code, original_source
+                    if (
+                        self._is_allowed_source_for_code(dev_id, code, original_source)
+                        is False
                     ):
+                        status_list.pop(i)
+                        i -= 1
+                        break
+
+                    # Only check update time if the source is allowed
+                    if update_time_valid is None:
+                        #only check update time once per dpcode, otherwise it would always fail
+                        update_time_valid = self._is_code_update_time_valid(
+                            dev_id,
+                            code,
+                            item.get("t", 0),
+                            original_source,
+                        )
+                    if update_time_valid is False:
                         status_list.pop(i)
                         i -= 1
                         break
@@ -125,4 +152,12 @@ class MultiSourceHandler:
             self.device_map[dev_id][code] = MultiSourceCodeCounter()
 
     def _is_allowed_source_for_code(self, dev_id: str, code: str, source: str) -> bool:
-        return self.device_map[dev_id][code].get_allowed_source() == source
+        return_val = self.device_map[dev_id][code].get_allowed_source() == source
+        return return_val
+
+    def _is_code_update_time_valid(
+        self, dev_id: str, code: str, update_time: int, source: str
+    ) -> bool:
+        return self.device_map[dev_id][code].update_last_update_time(
+            update_time
+        )

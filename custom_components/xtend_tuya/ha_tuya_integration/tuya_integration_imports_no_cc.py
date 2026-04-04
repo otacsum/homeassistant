@@ -9,7 +9,6 @@ from homeassistant.components.tuya.binary_sensor import (
     BINARY_SENSORS as BINARY_SENSORS_TUYA,  # noqa: F401
     TuyaBinarySensorEntity as TuyaBinarySensorEntity,
     TuyaBinarySensorEntityDescription as TuyaBinarySensorEntityDescription,
-    _CustomDPCodeWrapper as TuyaBinarySensorCustomDPCodeWrapper,  # noqa: F401
 )
 import homeassistant.components.tuya.binary_sensor as binary_sensor  # noqa: F401
 from homeassistant.components.button import (
@@ -27,64 +26,33 @@ from homeassistant.components.tuya.climate import (
     CLIMATE_DESCRIPTIONS as CLIMATE_DESCRIPTIONS_TUYA,  # noqa: F401
     TuyaClimateEntity as TuyaClimateEntity,
     TuyaClimateEntityDescription as TuyaClimateEntityDescription,
-    TUYA_HVAC_TO_HA as TuyaClimateHVACToHA,  # noqa: F401
-    _RoundedIntegerWrapper as TuyaClimateRoundedIntegerWrapper,  # noqa: F401
-    _get_temperature_wrapper as tuya_climate_get_temperature_wrapper,  # noqa: F401
-    _SwingModeWrapper as TuyaClimateSwingModeWrapper,  # noqa: F401
-    _PresetWrapper as TuyaClimatePresetWrapper,  # noqa: F401
-    _HvacModeWrapper as TuyaClimateHvacModeWrapper,  # noqa: F401
+    _TUYA_TO_HA_HVACMODE_MAPPINGS as TUYA_TUYA_TO_HA_HVACMODE_MAPPINGS,  # noqa: F401
+    _HA_TO_TUYA_TEMPERATURE as TUYA_HA_TO_TUYA_TEMPERATURE,  # noqa: F401
 )
 from homeassistant.components.tuya.cover import (
     COVERS as COVERS_TUYA,  # noqa: F401
     TuyaCoverEntity as TuyaCoverEntity,
     TuyaCoverEntityDescription as TuyaCoverEntityDescription,
-    _DPCodePercentageMappingWrapper as TuyaCoverDPCodePercentageMappingWrapper,  # noqa: F401
-    _IsClosedEnumWrapper as TuyaCoverIsClosedEnumWrapper,  # noqa: F401
-    _IsClosedInvertedWrapper as TuyaCoverIsClosedInvertedWrapper,  # noqa: F401
-    _get_instruction_wrapper as tuya_cover_get_instruction_wrapper,  # noqa: F401
-)
-from homeassistant.components.event import (
-    EventEntityDescription,
 )
 
-try:
-    from homeassistant.components.tuya.event import (
-        EVENTS as EVENTS_TUYA,  # noqa: F401 # type: ignore
-        TuyaEventEntity as TuyaEventEntity,
-        TuyaEventEntityDescription as TuyaEventEntityDescription,
-    )
-except Exception:
-    EVENTS_TUYA: dict[str, tuple[EventEntityDescription, ...]] = {}
-    from homeassistant.components.event import (
-        EventEntity as TuyaEventEntity,  # noqa: F401
-    )
+from homeassistant.components.tuya.event import (
+    EVENTS as EVENTS_TUYA,  # noqa: F401 # type: ignore
+    TuyaEventEntity as TuyaEventEntity,
+    TuyaEventEntityDescription as TuyaEventEntityDescription,
+)
 from homeassistant.components.tuya.fan import (
     TUYA_SUPPORT_TYPE as FANS_TUYA,  # noqa: F401
     TuyaFanEntity as TuyaFanEntity,
-    _DirectionEnumWrapper as TuyaFanDirectionEnumWrapper,  # noqa: F401
-    _FanSpeedEnumWrapper as TuyaFanFanSpeedEnumWrapper,  # noqa: F401
-    _FanSpeedIntegerWrapper as TuyaFanFanSpeedIntegerWrapper,  # noqa: F401
-    _DIRECTION_DPCODES as TUYA_FAN_DIRECTION_DPCODES,  # noqa: F401
-    _MODE_DPCODES as TUYA_FAN_MODE_DPCODES,  # noqa: F401
-    _OSCILLATE_DPCODES as TUYA_FAN_OSCILLATE_DPCODES,  # noqa: F401
-    _SWITCH_DPCODES as TUYA_FAN_SWITCH_DPCODES,  # noqa: F401
-    _get_speed_wrapper as tuya_fan_get_speed_wrapper,  # noqa: F401
 )
 from homeassistant.components.tuya.humidifier import (
     HUMIDIFIERS as HUMIDIFIERS_TUYA,  # noqa: F401
     TuyaHumidifierEntity as TuyaHumidifierEntity,
     TuyaHumidifierEntityDescription as TuyaHumidifierEntityDescription,
-    _RoundedIntegerWrapper as TuyaHumidifierRoundedIntegerWrapper,  # noqa: F401
 )
 from homeassistant.components.tuya.light import (
     LIGHTS as LIGHTS_TUYA,  # noqa: F401
     TuyaLightEntity as TuyaLightEntity,
     TuyaLightEntityDescription as TuyaLightEntityDescription,
-    _BrightnessWrapper as TuyaLightBrightnessWrapper,  # noqa: F401
-    _ColorDataWrapper as TuyaLightColorDataWrapper,  # noqa: F401
-    _ColorTempWrapper as TuyaLightColorTempWrapper,  # noqa: F401
-    _get_brightness_wrapper as tuya_light_get_brightness_wrapper,  # noqa: F401
-    _get_color_data_wrapper as tuya_light_get_color_data_wrapper,  # noqa: F401
 )
 from homeassistant.components.number import (
     NumberEntityDescription as TuyaNumberEntityDescription,  # noqa: F401
@@ -104,7 +72,6 @@ from homeassistant.components.tuya.sensor import (
     SENSORS as SENSORS_TUYA,  # noqa: F401
     TuyaSensorEntity as TuyaSensorEntity,
     TuyaSensorEntityDescription as TuyaSensorEntityDescription,
-    _get_dpcode_wrapper as tuya_sensor_get_dpcode_wrapper,  # noqa: F401
 )
 from homeassistant.components.siren import (
     SirenEntityDescription as TuyaSirenEntityDescription,  # noqa: F401
@@ -122,8 +89,6 @@ from homeassistant.components.tuya.switch import (
 )
 from homeassistant.components.tuya.vacuum import (
     TuyaVacuumEntity as TuyaVacuumEntity,
-    _VacuumActionWrapper as TuyaVacuumActionWrapper,  # noqa: F401
-    _VacuumActivityWrapper as TuyaVacuumActivityWrapper,  # noqa: F401
 )
 import homeassistant.components.tuya as tuya_integration  # noqa: F401
 
@@ -136,7 +101,6 @@ from tuya_sharing.manager import (
 )
 from homeassistant.components.tuya.const import (
     DPCode as TuyaDPCode,  # noqa: F401
-    DPType as TuyaDPType,  # noqa: F401
     DOMAIN as TuyaDOMAIN,  # noqa: F401
     DEVICE_CLASS_UNITS as TuyaDEVICE_CLASS_UNITS,  # noqa: F401
     CELSIUS_ALIASES as TuyaCELSIUS_ALIASES,  # noqa: F401
@@ -147,18 +111,16 @@ from homeassistant.components.tuya.entity import (
     TuyaEntity as TuyaEntity,
 )
 
-try:
-    from homeassistant.components.tuya.util import (
-        _DPTYPE_MAPPING as TUYA_DPTYPE_MAPPING,  # noqa: F401 # type: ignore
-        parse_dptype as tuya_util_parse_dptype,  # noqa: F401
-        RemapHelper as TuyaRemapHelper,  # noqa: F401
-    )
-except Exception:
-    from homeassistant.components.tuya.entity import (
-        _DPTYPE_MAPPING as TUYA_DPTYPE_MAPPING,  # noqa: F401 # type: ignore
-    )
+from tuya_device_handlers.const import (
+    DPType as TuyaDPType,   # noqa: F401
+    _DPTYPE_MAPPING as TUYA_DPTYPE_MAPPING,  # noqa: F401 # type: ignore
+)
 
-from homeassistant.components.tuya.type_information import (
+from tuya_device_handlers.utils import (
+    RemapHelper as TuyaRemapHelper,  # noqa: F401
+)
+
+from tuya_device_handlers.type_information import (
     TypeInformation as TuyaTypeInformation,  # noqa: F401
     BooleanTypeInformation as TuyaBooleanTypeInformation,  # noqa: F401
     EnumTypeInformation as TuyaEnumTypeInformation,  # noqa: F401
@@ -167,27 +129,27 @@ from homeassistant.components.tuya.type_information import (
     StringTypeInformation as TuyaStringTypeInformation,  # noqa: F401
     JsonTypeInformation as TuyaJsonTypeInformation,  # noqa: F401
     RawTypeInformation as TuyaRawTypeInformation,  # noqa: F401
-    _should_log_warning as tuya_type_information_should_log_warning,  # noqa: F401
 )
 
-try:
-    from homeassistant.components.tuya.models import (
-        DPCodeWrapper as TuyaDPCodeWrapper,  # noqa: F401
-        DPCodeTypeInformationWrapper as TuyaDPCodeTypeInformationWrapper,  # noqa: F401
-        DPCodeBooleanWrapper as TuyaDPCodeBooleanWrapper,  # noqa: F401
-        DPCodeEnumWrapper as TuyaDPCodeEnumWrapper,  # noqa: F401
-        DPCodeIntegerWrapper as TuyaDPCodeIntegerWrapper,  # noqa: F401
-        DPCodeBitmapBitWrapper as TuyaDPCodeBitmapBitWrapper,  # noqa: F401
-        DPCodeStringWrapper as TuyaDPCodeStringWrapper,  # noqa: F401
-        DPCodeJsonWrapper as TuyaDPCodeJsonWrapper,  # noqa: F401
-        DPCodeRawWrapper as TuyaDPCodeRawWrapper,  # noqa: F401
-        DeviceWrapper as TuyaDeviceWrapper,  # noqa: F401
-    )
-except Exception:
-    from homeassistant.components.tuya.entity import (
-        EnumTypeData as TuyaEnumTypeData,  # noqa: F401 # type: ignore
-        IntegerTypeData as TuyaIntegerTypeData,  # noqa: F401 # type: ignore
-    )
+from tuya_device_handlers.device_wrapper.common import (
+    _should_log_warning as tuya_type_information_should_log_warning,  # noqa: F401
+    DPCodeWrapper as TuyaDPCodeWrapper,  # noqa: F401
+    DPCodeTypeInformationWrapper as TuyaDPCodeTypeInformationWrapper,  # noqa: F401
+    DPCodeBooleanWrapper as TuyaDPCodeBooleanWrapper,  # noqa: F401
+    DPCodeEnumWrapper as TuyaDPCodeEnumWrapper,  # noqa: F401
+    DPCodeIntegerWrapper as TuyaDPCodeIntegerWrapper,  # noqa: F401
+    DPCodeStringWrapper as TuyaDPCodeStringWrapper,  # noqa: F401
+    DPCodeJsonWrapper as TuyaDPCodeJsonWrapper,  # noqa: F401
+    DPCodeRawWrapper as TuyaDPCodeRawWrapper,  # noqa: F401
+)
+
+from tuya_device_handlers.device_wrapper.base import (
+    DeviceWrapper as TuyaDeviceWrapper,  # noqa: F401
+)
+
+from tuya_device_handlers.device_wrapper.binary_sensor import (
+    DPCodeBitmapBitWrapper as TuyaDPCodeBitmapBitWrapper,  # noqa: F401
+)
 
 from tuya_sharing.scenes import (
     SharingScene as TuyaScene,  # noqa: F401

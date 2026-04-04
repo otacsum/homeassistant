@@ -4,6 +4,7 @@ from typing import Any
 from ...const import (
     VirtualStates,
     DescriptionVirtualState,
+    XTDeviceWatcherCategory,
 )
 import custom_components.xtend_tuya.multi_manager.multi_manager as mm
 import custom_components.xtend_tuya.multi_manager.shared.shared_classes as shared
@@ -57,12 +58,14 @@ class XTVirtualStateHandler:
                             and description.virtual_state & virtual_state.value
                         ):
                             # This virtual_state is applied to this key, let's return it
+                            vs_copy_to_state = getattr(description, "vs_copy_to_state", [])
+                            vs_copy_delta_to_state = getattr(description, "vs_copy_delta_to_state", [])
                             found_virtual_state = DescriptionVirtualState(
-                                description.key,
-                                virtual_state.name,
-                                VirtualStates(virtual_state.value),
-                                description.vs_copy_to_state,
-                                description.vs_copy_delta_to_state,
+                                key=description.key,
+                                virtual_state_name=virtual_state.name,
+                                virtual_state_value=VirtualStates(virtual_state.value),
+                                vs_copy_to_state=vs_copy_to_state,
+                                vs_copy_delta_to_state=vs_copy_delta_to_state,
                             )
                             to_return.append(found_virtual_state)
         return to_return
@@ -95,9 +98,8 @@ class XTVirtualStateHandler:
                                 if dp_id := self.multi_manager._read_dpId_from_code(
                                     virtual_state.key, device
                                 ):
-                                    if (
-                                        new_dp_id
-                                        := self._get_empty_local_strategy_dp_id(device)
+                                    if new_dp_id := self._get_empty_local_strategy_dp_id(
+                                        device
                                     ):
                                         new_local_strategy = copy.deepcopy(
                                             device.local_strategy[dp_id]
@@ -118,7 +120,9 @@ class XTVirtualStateHandler:
                                                     "statusFormat"
                                                 ] = new_local_strategy_config_item[
                                                     "statusFormat"
-                                                ].replace(virtual_state.key, new_code)
+                                                ].replace(
+                                                    virtual_state.key, new_code
+                                                )
                                         new_local_strategy["status_code"] = new_code
                                         device.local_strategy[new_dp_id] = (
                                             new_local_strategy
@@ -139,9 +143,8 @@ class XTVirtualStateHandler:
                                 if dp_id := self.multi_manager._read_dpId_from_code(
                                     virtual_state.key, device
                                 ):
-                                    if (
-                                        new_dp_id
-                                        := self._get_empty_local_strategy_dp_id(device)
+                                    if new_dp_id := self._get_empty_local_strategy_dp_id(
+                                        device
                                     ):
                                         new_local_strategy = copy.deepcopy(
                                             device.local_strategy[dp_id]
@@ -162,7 +165,9 @@ class XTVirtualStateHandler:
                                                     "statusFormat"
                                                 ] = new_local_strategy_config_item[
                                                     "statusFormat"
-                                                ].replace(virtual_state.key, new_code)
+                                                ].replace(
+                                                    virtual_state.key, new_code
+                                                )
                                         new_local_strategy["status_code"] = new_code
                                         device.local_strategy[new_dp_id] = (
                                             new_local_strategy
@@ -186,13 +191,76 @@ class XTVirtualStateHandler:
                                 if dp_id := self.multi_manager._read_dpId_from_code(
                                     virtual_state.key, device
                                 ):
-                                    if (
-                                        new_dp_id
-                                        := self._get_empty_local_strategy_dp_id(device)
+                                    if new_dp_id := self._get_empty_local_strategy_dp_id(
+                                        device
                                     ):
                                         new_local_strategy = copy.deepcopy(
                                             device.local_strategy[dp_id]
                                         )
+                                        if "config_item" in new_local_strategy:
+                                            new_local_strategy_config_item = (
+                                                new_local_strategy["config_item"]
+                                            )
+                                            if (
+                                                "statusFormat"
+                                                in new_local_strategy_config_item
+                                                and virtual_state.key
+                                                in new_local_strategy_config_item[
+                                                    "statusFormat"
+                                                ]
+                                            ):
+                                                new_local_strategy_config_item[
+                                                    "statusFormat"
+                                                ] = new_local_strategy_config_item[
+                                                    "statusFormat"
+                                                ].replace(
+                                                    virtual_state.key, new_code
+                                                )
+                                        new_local_strategy["status_code"] = new_code
+                                        device.local_strategy[new_dp_id] = (
+                                            new_local_strategy
+                                        )
+                                        device.function[new_code].dp_id = new_dp_id
+                        for vs_new_code in virtual_state.vs_copy_delta_to_state:
+                            new_code = str(vs_new_code)
+                            if device.status.get(new_code, None) is None:
+                                device.status[new_code] = 0
+                            device.function[new_code] = copy.deepcopy(
+                                device.function[virtual_state.key]
+                            )
+                            device.function[new_code].code = new_code
+                            device.function[new_code].dp_id = 0
+                            if not self.multi_manager._read_dpId_from_code(
+                                new_code, device
+                            ):
+                                if dp_id := self.multi_manager._read_dpId_from_code(
+                                    virtual_state.key, device
+                                ):
+                                    if new_dp_id := self._get_empty_local_strategy_dp_id(
+                                        device
+                                    ):
+                                        new_local_strategy = copy.deepcopy(
+                                            device.local_strategy[dp_id]
+                                        )
+                                        if "config_item" in new_local_strategy:
+                                            new_local_strategy_config_item = (
+                                                new_local_strategy["config_item"]
+                                            )
+                                            if (
+                                                "statusFormat"
+                                                in new_local_strategy_config_item
+                                                and virtual_state.key
+                                                in new_local_strategy_config_item[
+                                                    "statusFormat"
+                                                ]
+                                            ):
+                                                new_local_strategy_config_item[
+                                                    "statusFormat"
+                                                ] = new_local_strategy_config_item[
+                                                    "statusFormat"
+                                                ].replace(
+                                                    virtual_state.key, new_code
+                                                )
                                         new_local_strategy["status_code"] = new_code
                                         device.local_strategy[new_dp_id] = (
                                             new_local_strategy
@@ -205,9 +273,10 @@ class XTVirtualStateHandler:
         status_in: list[dict[str, Any]],
         source: str | None = None,
     ) -> list:
+        if not status_in:
+            return status_in
         status = copy.deepcopy(status_in)
         virtual_states = self.get_category_virtual_states(device.category)
-        debug: bool = False
         for virtual_state in virtual_states:
             if (
                 virtual_state.virtual_state_value
@@ -219,14 +288,6 @@ class XTVirtualStateHandler:
                             device.id, item
                         )
                     )
-                    if result_ok and code == "add_ele":
-                        if not debug:
-                            self.multi_manager.device_watcher.report_message(
-                                device.id, f"[{source}]Status In: {status_in}", device
-                            )
-                        debug = True
-                        # self.multi_manager.device_watcher.report_message(device.id, f"VirtualStates: {virtual_states}", device)
-
                     if result_ok and code == virtual_state.key:
                         cur_key_value = 0
                         if code in device.status:
@@ -279,16 +340,23 @@ class XTVirtualStateHandler:
                     for item in status:
                         code, dpId, new_key_value, result_ok = (
                             self.multi_manager._read_code_dpid_value_from_state(
-                                device.id, item, False, True
+                                device.id,
+                                item,
+                                False,
+                                True,
                             )
                         )
                         if result_ok and code == virtual_state.key:
+                            before_value = item["value"]
                             item["value"] += device.status[virtual_state.key]
+                            after_value = item["value"]
+                            self.multi_manager.device_watcher.report_message(
+                                device.id,
+                                f"[{source}]VS State applying: code: {code}, before_update: {before_value}, after_update: {after_value}, status_in: {status_in}",
+                                XTDeviceWatcherCategory.VIRTUAL_STATE,
+                                device,
+                            )
                             continue
-        if debug:
-            self.multi_manager.device_watcher.report_message(
-                device.id, f"[{source}]Status Out: {status}", device
-            )
         return status
 
     def _get_empty_local_strategy_dp_id(self, device: shared.XTDevice) -> int | None:

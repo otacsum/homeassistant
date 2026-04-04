@@ -4,7 +4,7 @@
   "after_dependencies": ["tuya"],
   "codeowners": ["@azerty9971"],
   "config_flow": true,
-  "dependencies": ["ffmpeg", "http"],
+  "dependencies": ["ffmpeg", "http", "recorder"],
   "dhcp": [
     {
       "macaddress": "105A17*"
@@ -45,6 +45,6 @@
   "iot_class": "cloud_push",
   "issue_tracker": "https://github.com/azerty9971/xtend_tuya/issues",
   "loggers": ["tuya_iot", "tuya_sharing"],
-  "requirements": [],
-  "version": "4.3.3"
+  "requirements": ["tuya-iot-py-sdk==0.6.6", "yappi==1.7.3"],
+  "version": "4.4.1"
 }

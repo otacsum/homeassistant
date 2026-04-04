@@ -3,7 +3,8 @@ from typing import Any
 import uuid
 import hashlib
 import time
-from datetime import datetime
+
+# from datetime import datetime
 import json
 from tuya_sharing import SharingTokenListener
 from tuya_sharing.customerapi import (
@@ -17,6 +18,7 @@ from tuya_sharing.customerapi import (
 )
 from ....const import (
     LOGGER,
+    XT_RETRY_FAILED_CALLS_NUMBER,
 )
 
 
@@ -26,12 +28,12 @@ class XTSharingTokenInfo(CustomerTokenInfo):
 
 class XTSharingAPI(CustomerApi):
     def __init__(
-            self,
-            token_info: CustomerTokenInfo,
-            client_id: str,
-            user_code: str,
-            end_point: str,
-            listener: SharingTokenListener
+        self,
+        token_info: CustomerTokenInfo,
+        client_id: str,
+        user_code: str,
+        end_point: str,
+        listener: SharingTokenListener,
     ):
         super().__init__(token_info, client_id, user_code, end_point, listener)
 
@@ -119,8 +121,9 @@ class XTSharingAPI(CustomerApi):
         path: str,
         params: dict[str, Any] | None = None,
         body: dict[str, Any] | None = None,
+        attempt_number: int = 0,
     ) -> dict[str, Any] | None:
-        start_time = datetime.now()
+        # start_time = datetime.now()
         self.refresh_access_token_if_need()
 
         rid = str(uuid.uuid4())
@@ -176,7 +179,18 @@ class XTSharingAPI(CustomerApi):
         ret = response.json()
 
         if not ret.get("success"):
-            LOGGER.warning(f"[SHARING API]API call error: Request: {method} {path} PARAMS: {json.dumps(params, ensure_ascii=False, indent=2) if params is not None else ''} BODY: {json.dumps(body, ensure_ascii=False, indent=2) if body is not None else ''}, Response: {json.dumps(ret, ensure_ascii=False, indent=2)}")
+            if (
+                ret.get("code", 0) == "-9999999"
+                and attempt_number < XT_RETRY_FAILED_CALLS_NUMBER
+            ):
+                return self.__request(
+                    method=method,
+                    path=path,
+                    params=params,
+                    body=body,
+                    attempt_number=(attempt_number + 1),
+                )
+            # LOGGER.warning(f"[SHARING API]API call error: Request: {method} {path} PARAMS: {json.dumps(params, ensure_ascii=False, indent=2) if params is not None else ''} BODY: {json.dumps(body, ensure_ascii=False, indent=2) if body is not None else ''}, Response: {json.dumps(ret, ensure_ascii=False, indent=2)}")
             raise Exception(
                 f"[SHARING API]API call error: Request: {method} {path} PARAMS: {json.dumps(params, ensure_ascii=False, indent=2) if params is not None else ''} BODY: {json.dumps(body, ensure_ascii=False, indent=2) if body is not None else ''}, Response: {json.dumps(ret, ensure_ascii=False, indent=2)}"
             )
@@ -187,8 +201,8 @@ class XTSharingAPI(CustomerApi):
         except json.decoder.JSONDecodeError:
             ret["result"] = result
 
-        time_taken = datetime.now() - start_time
-        LOGGER.debug(
-            f"[SHARING API][{time_taken}]Request: {method} {path} PARAMS: {json.dumps(params, ensure_ascii=False, indent=2) if params is not None else ''} BODY: {json.dumps(body, ensure_ascii=False, indent=2) if body is not None else ''}, Response: {json.dumps(ret, ensure_ascii=False, indent=2)}"
-        )
+        # time_taken = datetime.now() - start_time
+        # LOGGER.debug(
+        #    f"[SHARING API][{time_taken}]Request: {method} {path} PARAMS: {json.dumps(params, ensure_ascii=False, indent=2) if params is not None else ''} BODY: {json.dumps(body, ensure_ascii=False, indent=2) if body is not None else ''}, Response: {json.dumps(ret, ensure_ascii=False, indent=2)}"
+        # )
         return ret

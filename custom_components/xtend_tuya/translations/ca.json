@@ -212,6 +212,7 @@
             "humidifier_spray_mode": {
                 "name": "Mode de polvoritzaci\u00f3",
                 "state": {
+                    "auto": "Auto",
                     "health": "Salut",
                     "humidity": "Humitat",
                     "sleep": "Dormint",
@@ -276,12 +277,15 @@
             },
             "relay_status": {
                 "state": {
-                    "last": "Recorda l'\u00faltim estat",
-                    "memory": "Recorda l'\u00faltim estat",
                     "off": "OFF",
                     "on": "ON",
                     "power_off": "OFF",
                     "power_on": "ON"
+                }
+            },
+            "siren_mode": {
+                "state": {
+                    "normal": "Normal"
                 }
             },
             "target_humidity": {
@@ -293,7 +297,7 @@
             "vacuum_cistern": {
                 "name": "Ajust del dip\u00f2sit d'aigua",
                 "state": {
-                    "closed": "Tancat/ada",
+                    "closed": "Tancada",
                     "high": "Alt/a",
                     "low": "Baix/a",
                     "middle": "Mitj\u00e0"
@@ -380,8 +384,14 @@
             "carbon_monoxide": {
                 "name": "Mon\u00f2xid de carboni"
             },
+            "cat_litter_box_status": {
+                "name": "Estat",
+                "state": {
+                    "standby": "En espera"
+                }
+            },
             "cleaning_area": {
-                "name": "Zona de neteja"
+                "name": "\u00c0rea netejada"
             },
             "cleaning_time": {
                 "name": "Temps de neteja"
@@ -403,6 +413,9 @@
             },
             "humidity": {
                 "name": "Humitat"
+            },
+            "humidity_outdoor": {
+                "name": "Humitat exterior"
             },
             "illuminance": {
                 "name": "Il\u00b7luminaci\u00f3"
@@ -496,7 +509,7 @@
                 "name": "Absorci\u00f3 de part\u00edcules total"
             },
             "total_cleaning_area": {
-                "name": "Zona total de neteja"
+                "name": "\u00c0rea total netejada"
             },
             "total_cleaning_time": {
                 "name": "Temps total de neteja"

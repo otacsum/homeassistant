@@ -27,11 +27,17 @@
     },
     "entity": {
         "binary_sensor": {
+            "bag_full": {
+                "name": "Saco cheio"
+            },
             "carbon_dioxide": {
                 "name": "Di\u00f3xido de carbono"
             },
             "carbon_monoxide": {
                 "name": "Mon\u00f3xido de carbono"
+            },
+            "cover_off": {
+                "name": "Cobertura desligada"
             },
             "defrost": {
                 "name": "Descongelar"
@@ -71,6 +77,12 @@
             }
         },
         "button": {
+            "factory_reset": {
+                "name": "Reposi\u00e7\u00e3o de f\u00e1brica"
+            },
+            "manual_clean": {
+                "name": "Limpeza manual"
+            },
             "reset_duster_cloth": {
                 "name": "Redefinir pano do espanador"
             },
@@ -105,6 +117,12 @@
             }
         },
         "event": {
+            "doorbell_message": {
+                "name": "Mensagem da campainha"
+            },
+            "doorbell_picture": {
+                "name": "Imagem da campainha"
+            },
             "numbered_button": {
                 "name": "Bot\u00e3o {button_number}",
                 "state_attributes": {
@@ -159,6 +177,9 @@
             },
             "cook_time": {
                 "name": "Tempo de cozedura"
+            },
+            "delay_clean_time": {
+                "name": "Atrasar o tempo de limpeza"
             },
             "down_delay": {
                 "name": "Atraso de descida"
@@ -469,14 +490,23 @@
                 }
             },
             "relay_status": {
-                "name": "Comportamento ao ligar",
+                "name": "Comportamento de arranque",
                 "state": {
-                    "last": "Lembrar \u00faltimo estado",
-                    "memory": "Lembrar \u00faltimo estado",
+                    "last": "Estado anterior",
+                    "memory": "Estado anterior",
                     "off": "Desligado",
                     "on": "Ligado",
                     "power_off": "Desligado",
                     "power_on": "Ligado"
+                }
+            },
+            "siren_mode": {
+                "name": "Modo sirene",
+                "state": {
+                    "alarm_light": "Luz",
+                    "alarm_sound": "Som",
+                    "alarm_sound_light": "Som & luz",
+                    "normal": "Normal"
                 }
             },
             "target_humidity": {
@@ -593,6 +623,17 @@
             "carbon_monoxide": {
                 "name": "Mon\u00f3xido de carbono"
             },
+            "cat_litter_box_status": {
+                "name": "Estado",
+                "state": {
+                    "clean": "A limpar",
+                    "empty": "A vazar",
+                    "level": "A nivelar",
+                    "sleep": "A dormir",
+                    "standby": "Em espera",
+                    "uv": "A higienizar"
+                }
+            },
             "cat_weight": {
                 "name": "Peso do gato"
             },
@@ -619,6 +660,12 @@
             },
             "duster_cloth_life": {
                 "name": "Vida \u00fatil do pano de p\u00f3"
+            },
+            "excretion_time_day": {
+                "name": "Dura\u00e7\u00e3o da excre\u00e7\u00e3o"
+            },
+            "excretion_times_day": {
+                "name": "Tempos de excre\u00e7\u00e3o (dia)"
             },
             "feels_like_temperature": {
                 "name": "Sente-se como"
@@ -874,6 +921,9 @@
             "arm_beep": {
                 "name": "Bip do bra\u00e7o"
             },
+            "auto_clean": {
+                "name": "Auto limpeza"
+            },
             "battery_lock": {
                 "name": "Bloqueio da bateria"
             },
@@ -998,7 +1048,7 @@
                 "name": "Som"
             },
             "sound_detection": {
-                "name": "Detec\u00e7\u00e3o de som"
+                "name": "Dete\u00e7\u00e3o de som"
             },
             "spray": {
                 "name": "Pulverizar"

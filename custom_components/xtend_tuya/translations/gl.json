@@ -113,9 +113,6 @@
             "record_mode": {
                 "name": "Modo de gravaci\u00f3n"
             },
-            "relay_status": {
-                "name": "Comportamento ao iniciar"
-            },
             "target_humidity": {
                 "name": "Humidade obxectivo"
             },

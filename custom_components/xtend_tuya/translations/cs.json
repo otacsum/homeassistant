@@ -77,6 +77,12 @@
             }
         },
         "button": {
+            "factory_reset": {
+                "name": "Tov\u00e1rn\u00ed nastaven\u00ed"
+            },
+            "manual_clean": {
+                "name": "Ru\u010dn\u00ed \u010di\u0161t\u011bn\u00ed"
+            },
             "reset_duster_cloth": {
                 "name": "Resetovat prachovku"
             },
@@ -111,6 +117,12 @@
             }
         },
         "event": {
+            "doorbell_message": {
+                "name": "Zpr\u00e1va zvonku u dve\u0159\u00ed"
+            },
+            "doorbell_picture": {
+                "name": "Obr\u00e1zek zvonku"
+            },
             "numbered_button": {
                 "name": "Tla\u010d\u00edtko {button_number}",
                 "state_attributes": {
@@ -166,6 +178,9 @@
             "cook_time": {
                 "name": "Doba va\u0159en\u00ed"
             },
+            "delay_clean_time": {
+                "name": "Odlo\u017eit \u010das \u010di\u0161t\u011bn\u00ed"
+            },
             "down_delay": {
                 "name": "Zpo\u017ed\u011bn\u00ed dol\u016f"
             },
@@ -197,7 +212,7 @@
                 "name": "Instala\u010dn\u00ed v\u00fd\u0161ka"
             },
             "inverter_output_power_limit": {
-                "name": "Omezen\u00ed v\u00fdstupn\u00edho v\u00fdkonu m\u011bni\u010de"
+                "name": "Omezen\u00ed v\u00fdstupn\u00edho v\u00fdkonu st\u0159\u00edda\u010de"
             },
             "maximum_brightness": {
                 "name": "Maxim\u00e1ln\u00ed jas"
@@ -477,12 +492,21 @@
             "relay_status": {
                 "name": "Chov\u00e1n\u00ed p\u0159i zapnut\u00ed",
                 "state": {
-                    "last": "Zapamatovat posledn\u00ed stav",
-                    "memory": "Zapamatovat posledn\u00ed stav",
+                    "last": "P\u0159edchoz\u00ed stav",
+                    "memory": "P\u0159edchoz\u00ed stav",
                     "off": "Vypnuto",
                     "on": "Zapnuto",
                     "power_off": "Vypnuto",
                     "power_on": "Zapnuto"
+                }
+            },
+            "siren_mode": {
+                "name": "Re\u017eim sir\u00e9ny",
+                "state": {
+                    "alarm_light": "Sv\u011btlo",
+                    "alarm_sound": "Zvuk",
+                    "alarm_sound_light": "Zvuk a sv\u011btlo",
+                    "normal": "Norm\u00e1ln\u00ed"
                 }
             },
             "target_humidity": {
@@ -599,6 +623,17 @@
             "carbon_monoxide": {
                 "name": "Oxid uhelnat\u00fd"
             },
+            "cat_litter_box_status": {
+                "name": "Stav",
+                "state": {
+                    "clean": "\u010ci\u0161t\u011bn\u00ed",
+                    "empty": "Vyprazd\u0148ov\u00e1n\u00ed",
+                    "level": "Vyrovn\u00e1v\u00e1n\u00ed",
+                    "sleep": "Ve sp\u00e1nku",
+                    "standby": "P\u0159ipraveno",
+                    "uv": "Dezinfikov\u00e1n\u00ed"
+                }
+            },
             "cat_weight": {
                 "name": "Hmotnost ko\u010dky"
             },
@@ -627,7 +662,7 @@
                 "name": "\u017divotnost prachovky"
             },
             "excretion_time_day": {
-                "name": "Doba vylu\u010dov\u00e1n\u00ed (den)"
+                "name": "Doba vylu\u010dov\u00e1n\u00ed"
             },
             "excretion_times_day": {
                 "name": "Doby vylu\u010dov\u00e1n\u00ed (den)"
@@ -669,7 +704,7 @@
                 "name": "Teplotn\u00ed kan\u00e1l sondy {index}"
             },
             "inverter_output_power": {
-                "name": "V\u00fdstupn\u00ed v\u00fdkon m\u011bni\u010de"
+                "name": "V\u00fdstupn\u00ed v\u00fdkon st\u0159\u00edda\u010de"
             },
             "last_amount": {
                 "name": "Posledn\u00ed objem"
@@ -885,6 +920,9 @@
             },
             "arm_beep": {
                 "name": "P\u00edpnut\u00ed p\u0159i zabezpe\u010den\u00ed"
+            },
+            "auto_clean": {
+                "name": "Automatick\u00e9 \u010di\u0161t\u011bn\u00ed"
             },
             "battery_lock": {
                 "name": "Z\u00e1mek baterie"

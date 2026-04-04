@@ -77,6 +77,12 @@
             }
         },
         "button": {
+            "factory_reset": {
+                "name": "\u6062\u5fa9\u51fa\u5ee0\u8a2d\u5b9a"
+            },
+            "manual_clean": {
+                "name": "\u624b\u52d5\u6e05\u6f54"
+            },
             "reset_duster_cloth": {
                 "name": "\u91cd\u7f6e\u9664\u5875\u5e03"
             },
@@ -111,6 +117,12 @@
             }
         },
         "event": {
+            "doorbell_message": {
+                "name": "\u9580\u9234\u7559\u8a00"
+            },
+            "doorbell_picture": {
+                "name": "\u9580\u9234\u5716\u7247"
+            },
             "numbered_button": {
                 "name": "\u6309\u9215 {button_number}",
                 "state_attributes": {
@@ -165,6 +177,9 @@
             },
             "cook_time": {
                 "name": "\u70f9\u98ea\u6642\u9593"
+            },
+            "delay_clean_time": {
+                "name": "\u5ef6\u9072\u6e05\u6f54\u6642\u9593"
             },
             "down_delay": {
                 "name": "\u4e0b\u884c\u5ef6\u9072"
@@ -475,14 +490,23 @@
                 }
             },
             "relay_status": {
-                "name": "\u958b\u6a5f\u884c\u70ba",
+                "name": "\u555f\u52d5\u6642\u7684\u901a\u96fb\u884c\u70ba",
                 "state": {
-                    "last": "\u8a18\u4f4f\u6700\u5f8c\u72c0\u614b",
-                    "memory": "\u8a18\u4f4f\u6700\u5f8c\u72c0\u614b",
+                    "last": "\u5148\u524d\u72c0\u614b",
+                    "memory": "\u5148\u524d\u72c0\u614b",
                     "off": "\u95dc\u9589",
                     "on": "\u958b\u555f",
                     "power_off": "\u95dc\u9589",
                     "power_on": "\u958b\u555f"
+                }
+            },
+            "siren_mode": {
+                "name": "\u8b66\u5831\u6a21\u5f0f",
+                "state": {
+                    "alarm_light": "\u71c8\u5149",
+                    "alarm_sound": "\u97f3\u6548",
+                    "alarm_sound_light": "\u97f3\u6548\u8207\u71c8\u5149",
+                    "normal": "\u6b63\u5e38"
                 }
             },
             "target_humidity": {
@@ -562,7 +586,7 @@
                 "name": "\u5927\u6c23\u58d3"
             },
             "air_quality": {
-                "name": "\u7a7a\u6c23\u8cea\u91cf",
+                "name": "\u7a7a\u6c23\u54c1\u8cea",
                 "state": {
                     "good": "\u826f\u597d",
                     "great": "\u6975\u4f73",
@@ -571,7 +595,7 @@
                 }
             },
             "air_quality_index": {
-                "name": "\u7a7a\u6c23\u8cea\u91cf\u6307\u6578",
+                "name": "\u7a7a\u6c23\u54c1\u8cea\u6307\u6578",
                 "state": {
                     "level_1": "\u7b49\u7d1a 1",
                     "level_2": "\u7b49\u7d1a 2",
@@ -598,6 +622,17 @@
             },
             "carbon_monoxide": {
                 "name": "\u4e00\u6c27\u5316\u78b3"
+            },
+            "cat_litter_box_status": {
+                "name": "\u72c0\u614b",
+                "state": {
+                    "clean": "\u6e05\u6383\u4e2d",
+                    "empty": "\u6e05\u7a7a\u4e2d",
+                    "level": "\u6574\u5e73\u4e2d",
+                    "sleep": "\u4f11\u7720\u4e2d",
+                    "standby": "\u5f85\u547d",
+                    "uv": "\u6d88\u6bd2\u4e2d"
+                }
             },
             "cat_weight": {
                 "name": "\u8c93\u9ad4\u91cd"
@@ -627,7 +662,7 @@
                 "name": "\u9664\u5875\u5e03\u58fd\u547d"
             },
             "excretion_time_day": {
-                "name": "\u6392\u6c23\u6642\u9593\uff08\u5929\uff09"
+                "name": "\u6392\u6c23\u6301\u7e8c\u6642\u9593"
             },
             "excretion_times_day": {
                 "name": "\u6392\u6c23\u6642\u9593\uff08\u5929\uff09"
@@ -886,6 +921,9 @@
             "arm_beep": {
                 "name": "\u8b66\u6212\u55f6\u8072"
             },
+            "auto_clean": {
+                "name": "\u81ea\u52d5\u6e05\u6f54"
+            },
             "battery_lock": {
                 "name": "\u96fb\u6c60\u9396"
             },
@@ -1057,7 +1095,7 @@
     },
     "exceptions": {
         "action_dpcode_not_found": {
-            "message": "\u7121\u6cd5\u8655\u7406\u52d5\u4f5c\uff0c\u56e0\u70ba\u88dd\u7f6e\u672a\u63d0\u4f9b\u76f8\u61c9\u7684\u529f\u80fd\u4ee3\u78bc\uff08\u9810\u671f\u70ba {available} \u4e2d\u7684\u5176\u4e2d\u4e00\u500b {expected}\uff09\u3002"
+            "message": "\u7121\u6cd5\u8655\u7406\u64cd\u4f5c\uff0c\u56e0\u70ba\u88dd\u7f6e\u672a\u63d0\u4f9b\u76f8\u61c9\u7684\u529f\u80fd\u4ee3\u78bc\uff08\u9810\u671f\u70ba {available} \u4e2d\u7684\u5176\u4e2d\u4e00\u500b {expected}\uff09\u3002"
         }
     },
     "issues": {

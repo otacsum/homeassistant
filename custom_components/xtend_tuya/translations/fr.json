@@ -348,12 +348,15 @@
             "relay_status": {
                 "name": "Comportement \u00e0 la mise sous tension",
                 "state": {
-                    "last": "Se souvenir du dernier \u00e9tat",
-                    "memory": "Se souvenir du dernier \u00e9tat",
                     "off": "D\u00e9sactiv\u00e9",
                     "on": "Activ\u00e9",
                     "power_off": "D\u00e9sactiv\u00e9",
                     "power_on": "Activ\u00e9"
+                }
+            },
+            "siren_mode": {
+                "state": {
+                    "normal": "Normal"
                 }
             },
             "target_humidity": {

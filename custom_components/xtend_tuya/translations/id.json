@@ -267,10 +267,7 @@
                 }
             },
             "relay_status": {
-                "name": "Perilaku nyala",
                 "state": {
-                    "last": "Ingat status terakhir",
-                    "memory": "Ingat status terakhir",
                     "off": "Mati",
                     "on": "Nyala",
                     "power_off": "Mati",

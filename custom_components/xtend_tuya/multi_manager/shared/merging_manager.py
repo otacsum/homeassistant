@@ -4,6 +4,7 @@ import copy
 from typing import Any
 from ...const import (
     LOGGER,
+    XTDeviceWatcherCategory,
 )
 import custom_components.xtend_tuya.multi_manager.shared.cloud_fix as cf
 import custom_components.xtend_tuya.multi_manager.multi_manager as mm
@@ -77,12 +78,16 @@ class XTMergingManager:
         if msg_queue:
             if multi_manager is not None:
                 multi_manager.device_watcher.report_message(
-                    device1.id, f"Messages for merging of {higher_bak.name}({higher_bak.source}) and {lower_bak.name}({lower_bak.source}):"
+                    device1.id,
+                    f"Messages for merging of {higher_bak.name}({higher_bak.source}) and {lower_bak.name}({lower_bak.source}):",
+                    XTDeviceWatcherCategory.CLOUD_FIX,
                 )
                 for msg in msg_queue:
-                    multi_manager.device_watcher.report_message(device1.id, msg)
+                    multi_manager.device_watcher.report_message(device1.id, msg, XTDeviceWatcherCategory.CLOUD_FIX)
             else:
-                LOGGER.warning(f"Messages for merging of {higher_bak.name}({higher_bak.source}) and {lower_bak.name}({lower_bak.source}):")
+                LOGGER.warning(
+                    f"Messages for merging of {higher_bak.name}({higher_bak.source}) and {lower_bak.name}({lower_bak.source}):"
+                )
                 for msg in msg_queue:
                     LOGGER.warning(msg)
 
@@ -227,10 +232,8 @@ class XTMergingManager:
                         code
                     ].values
                 else:
-                    device1.status_range[
-                        code
-                    ].values = cf.CloudFixes.get_fixed_value_descr(
-                        value1_raw, value2_raw
+                    device1.status_range[code].values = (
+                        cf.CloudFixes.get_fixed_value_descr(value1_raw, value2_raw)
                     )
                     device2.status_range[code].values = device1.status_range[
                         code
@@ -454,9 +457,8 @@ class XTMergingManager:
             if left is not None:
                 return left
             return right
-        if (
-            type(left) is not type(right)
-            and not (isinstance(left, str) and isinstance(right, str))
+        if type(left) is not type(right) and not (
+            isinstance(left, str) and isinstance(right, str)
         ):  # Used to prevent warning on classes that represent a string (DPType and TuyaDPType)
             if msg_queue is not None:
                 msg_queue.append(

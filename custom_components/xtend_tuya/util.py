@@ -31,7 +31,7 @@ import custom_components.xtend_tuya.multi_manager.shared.shared_classes as share
 
 
 def log_stack(message: str):
-    LOGGER.debug(message, stack_info=True)
+    LOGGER.warning(message, stack_info=True)
 
 
 def get_default_value(dp_type: TuyaDPType | None) -> Any:
@@ -303,7 +303,7 @@ def b64todatetime(value):
     try:
         decoded_value = b64decode(value)
         if len(decoded_value) < 6:
-            LOGGER.debug(
+            LOGGER.warning(
                 f"b64todatetime: insufficient bytes (expected 6, got {len(decoded_value)}) from value {value}"
             )
             return None
@@ -317,5 +317,5 @@ def b64todatetime(value):
             tzinfo=DEFAULT_TIME_ZONE,
         )
     except (IndexError, ValueError, TypeError) as e:
-        LOGGER.debug(f"Failed to decode b64 datetime from value {value}: {e}")
+        LOGGER.warning(f"Failed to decode b64 datetime from value {value}: {e}")
         return None

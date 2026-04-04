@@ -1,7 +1,7 @@
 {
     "config": {
         "abort": {
-            "reauth_successful": "L'autenticazione ha avuto successo"
+            "reauth_successful": "La riautenticazione \u00e8 avvenuta con successo"
         },
         "error": {
             "invalid_auth": "Autenticazione non valida",
@@ -10,11 +10,17 @@
     },
     "entity": {
         "binary_sensor": {
+            "bag_full": {
+                "name": "Borsa piena"
+            },
             "carbon_dioxide": {
                 "name": "Anidride carbonica"
             },
             "carbon_monoxide": {
                 "name": "Monossido di carbonio"
+            },
+            "cover_off": {
+                "name": "Coperchio rimosso"
             },
             "defrost": {
                 "name": "Sbrinamento"
@@ -104,6 +110,9 @@
             },
             "cloud_recipe": {
                 "name": "Ricetta Cloud"
+            },
+            "delay_clean_time": {
+                "name": "Ritardo del tempo di pulizia"
             },
             "down_delay": {
                 "name": "Ritardo di discesa"
@@ -377,14 +386,20 @@
                 }
             },
             "relay_status": {
-                "name": "Comportamento di accensione",
                 "state": {
-                    "last": "Ricorda l'ultimo stato",
-                    "memory": "Ricorda l'ultimo stato",
                     "off": "Spento",
                     "on": "Acceso",
                     "power_off": "Spento",
                     "power_on": "Acceso"
+                }
+            },
+            "siren_mode": {
+                "name": "Modalit\u00e0 sirena",
+                "state": {
+                    "alarm_light": "Luce",
+                    "alarm_sound": "Suono",
+                    "alarm_sound_light": "Suono e luce",
+                    "normal": "Normale"
                 }
             },
             "target_humidity": {
@@ -396,7 +411,7 @@
             "vacuum_cistern": {
                 "name": "Regolazione del serbatoio dell'acqua",
                 "state": {
-                    "closed": "Chiuso/a",
+                    "closed": "Chiuso",
                     "high": "Alto/a",
                     "low": "Basso/a",
                     "middle": "Medio"
@@ -495,6 +510,17 @@
             "carbon_monoxide": {
                 "name": "Monossido di carbonio"
             },
+            "cat_litter_box_status": {
+                "name": "Stato",
+                "state": {
+                    "clean": "Pulizia",
+                    "empty": "Svuotamento",
+                    "level": "Livellamento",
+                    "sleep": "Dormiente",
+                    "standby": "In attesa",
+                    "uv": "Sanificazione"
+                }
+            },
             "cat_weight": {
                 "name": "Peso del gatto"
             },
@@ -515,6 +541,12 @@
             },
             "duster_cloth_life": {
                 "name": "Durata del panno per spolverare"
+            },
+            "excretion_times_day": {
+                "name": "Tempi di escrezione (giorno)"
+            },
+            "filter_duration": {
+                "name": "Durata del filtro"
             },
             "filter_life": {
                 "name": "Durata del filtro"

@@ -352,14 +352,20 @@
                 }
             },
             "relay_status": {
-                "name": "Opstartgedrag",
                 "state": {
-                    "last": "Onthoud de laatste status",
-                    "memory": "Onthoud de laatste status",
                     "off": "Uit",
                     "on": "Aan",
                     "power_off": "Uit",
                     "power_on": "Aan"
+                }
+            },
+            "siren_mode": {
+                "name": "Sirenemodus",
+                "state": {
+                    "alarm_light": "Licht",
+                    "alarm_sound": "Geluid",
+                    "alarm_sound_light": "Licht en geluid",
+                    "normal": "Normaal"
                 }
             },
             "target_humidity": {
@@ -462,6 +468,12 @@
             },
             "carbon_monoxide": {
                 "name": "Koolmonoxide"
+            },
+            "cat_litter_box_status": {
+                "name": "Status",
+                "state": {
+                    "standby": "Stand-by"
+                }
             },
             "cat_weight": {
                 "name": "Gewicht van kat"

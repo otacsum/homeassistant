@@ -264,9 +264,7 @@
                 }
             },
             "relay_status": {
-                "name": "Comportament la pornire",
                 "state": {
-                    "last": "Re\u021bine ultimul status",
                     "off": "Oprit",
                     "on": "Pornit",
                     "power_off": "Oprit",

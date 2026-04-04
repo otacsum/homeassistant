@@ -20,6 +20,9 @@ from .....shared.shared_classes import (
 from .....shared.threading import (
     XTEventLoopProtector,
 )
+from ......const import (
+    XTDeviceWatcherCategory,
+)
 
 ENDLINE = "\r\n"
 
@@ -188,6 +191,7 @@ class XTIOTWebRTCManager:
         self.ipc_manager.multi_manager.device_watcher.report_message(
             device_id,
             f"webrtc_config {webrtc_config}",
+            XTDeviceWatcherCategory.IOT_API,
             None,
             print_stack=True,
         )

@@ -23,6 +23,8 @@ from ....const import (
     MESSAGE_SOURCE_TUYA_SHARING,
     XTDeviceSourcePriority,
     XTLockingMechanism,
+    LOGGER,  # noqa: F401
+    XTDeviceWatcherCategory,
 )
 from ...multi_manager import (
     MultiManager,
@@ -89,7 +91,7 @@ class XTSharingDeviceManager(Manager):  # noqa: F811
         device = [
             device
             for device in self.device_map.values()
-            #if hasattr(device, "id") and getattr(device, "set_up", False)
+            # if hasattr(device, "id") and getattr(device, "set_up", False)
         ]
 
         if self.customer_api is not None:
@@ -114,6 +116,7 @@ class XTSharingDeviceManager(Manager):  # noqa: F811
                 self.multi_manager.device_watcher.report_message(
                     device.id,
                     f"Overriden device from regular Tuya: {device}",
+                    XTDeviceWatcherCategory.SHARING_API_INTERNAL,
                     device=device,  # type: ignore
                 )
                 new_device_map[device.id] = XTDevice.from_compatible_device(
@@ -159,6 +162,7 @@ class XTSharingDeviceManager(Manager):  # noqa: F811
         self.multi_manager.device_watcher.report_message(
             device_id,
             f"[{MESSAGE_SOURCE_TUYA_SHARING}]On device other: {biz_code} <=> {data}",
+            XTDeviceWatcherCategory.MQTT,
         )
         if biz_code == BIZCODE_BIND_USER:
             self.multi_manager.add_device_by_id(device_id)
@@ -181,13 +185,17 @@ class XTSharingDeviceManager(Manager):  # noqa: F811
 
     def _on_device_report(self, device_id: str, status: list):
         self.multi_manager.device_watcher.report_message(
-            device_id, f"[{MESSAGE_SOURCE_TUYA_SHARING}]On device report: {status}"
+            device_id,
+            f"[{MESSAGE_SOURCE_TUYA_SHARING}]On device report: {status}",
+            XTDeviceWatcherCategory.MQTT,
         )
         device = self.device_map.get(device_id, None)
         if not device:
             return
         status_new = self.multi_manager.convert_device_report_status_list(
-            device_id, status
+            device_id,
+            status,
+            MESSAGE_SOURCE_TUYA_SHARING,
         )
         status_new = self.multi_manager.multi_source_handler.filter_status_list(
             device_id, MESSAGE_SOURCE_TUYA_SHARING, status_new
@@ -200,13 +208,20 @@ class XTSharingDeviceManager(Manager):  # noqa: F811
 
     def send_commands(self, device_id: str, commands: list[dict[str, Any]]):
         self.multi_manager.device_watcher.report_message(
-            device_id, f"Sending Tuya commands: {commands}"
+            device_id,
+            f"Sending Tuya commands: {commands}",
+            XTDeviceWatcherCategory.SHARING_API,
         )
         if other_manager := self.get_overriden_device_manager():
             other_manager.send_commands(device_id, commands)
             return
         super().send_commands(device_id, commands)
 
-    def send_lock_unlock_command(self, device: XTDevice, lock: bool, force_unlock_mechanism: XTLockingMechanism = XTLockingMechanism.AUTO) -> bool:
+    def send_lock_unlock_command(
+        self,
+        device: XTDevice,
+        lock: bool,
+        force_unlock_mechanism: XTLockingMechanism = XTLockingMechanism.AUTO,
+    ) -> bool:
         # I didn't find a way to implement this using the Sharing SDK...
         return False

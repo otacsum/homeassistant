@@ -27,11 +27,17 @@
     },
     "entity": {
         "binary_sensor": {
+            "bag_full": {
+                "name": "Bolsa llena"
+            },
             "carbon_dioxide": {
                 "name": "Di\u00f3xido de carbono"
             },
             "carbon_monoxide": {
                 "name": "Mon\u00f3xido de carbono"
+            },
+            "cover_off": {
+                "name": "Destapar"
             },
             "defrost": {
                 "name": "Descongelar"
@@ -71,6 +77,12 @@
             }
         },
         "button": {
+            "factory_reset": {
+                "name": "Restablecimiento de f\u00e1brica"
+            },
+            "manual_clean": {
+                "name": "Limpieza manual"
+            },
             "reset_duster_cloth": {
                 "name": "Restablecer pa\u00f1o de limpieza"
             },
@@ -105,6 +117,12 @@
             }
         },
         "event": {
+            "doorbell_message": {
+                "name": "Mensaje del timbre"
+            },
+            "doorbell_picture": {
+                "name": "Imagen del timbre"
+            },
             "numbered_button": {
                 "name": "Bot\u00f3n {button_number}",
                 "state_attributes": {
@@ -159,6 +177,9 @@
             },
             "cook_time": {
                 "name": "Tiempo de cocci\u00f3n"
+            },
+            "delay_clean_time": {
+                "name": "Retrasar el tiempo de limpieza"
             },
             "down_delay": {
                 "name": "Espera de bajada"
@@ -471,12 +492,21 @@
             "relay_status": {
                 "name": "Comportamiento de encendido",
                 "state": {
-                    "last": "Recordar el \u00faltimo estado",
-                    "memory": "Recordar el \u00faltimo estado",
+                    "last": "Estado anterior",
+                    "memory": "Estado anterior",
                     "off": "Apagado",
                     "on": "Encendido",
                     "power_off": "Apagado",
                     "power_on": "Encendido"
+                }
+            },
+            "siren_mode": {
+                "name": "Modo sirena",
+                "state": {
+                    "alarm_light": "Luz",
+                    "alarm_sound": "Sonido",
+                    "alarm_sound_light": "Sonido y luz",
+                    "normal": "Normal"
                 }
             },
             "target_humidity": {
@@ -593,6 +623,17 @@
             "carbon_monoxide": {
                 "name": "Mon\u00f3xido de carbono"
             },
+            "cat_litter_box_status": {
+                "name": "Estado",
+                "state": {
+                    "clean": "Limpiando",
+                    "empty": "Vaciado",
+                    "level": "Nivelaci\u00f3n",
+                    "sleep": "Ahorro de energ\u00eda",
+                    "standby": "En espera",
+                    "uv": "Desinfecci\u00f3n"
+                }
+            },
             "cat_weight": {
                 "name": "Peso del gato"
             },
@@ -619,6 +660,12 @@
             },
             "duster_cloth_life": {
                 "name": "Vida \u00fatil de la gamuza"
+            },
+            "excretion_time_day": {
+                "name": "Duraci\u00f3n de la excreci\u00f3n"
+            },
+            "excretion_times_day": {
+                "name": "Tiempos de excreci\u00f3n (d\u00eda)"
             },
             "feels_like_temperature": {
                 "name": "Se siente como"
@@ -873,6 +920,9 @@
             },
             "arm_beep": {
                 "name": "Pitido al armar"
+            },
+            "auto_clean": {
+                "name": "Limpieza autom\u00e1tica"
             },
             "battery_lock": {
                 "name": "Bloqueo de la bater\u00eda"

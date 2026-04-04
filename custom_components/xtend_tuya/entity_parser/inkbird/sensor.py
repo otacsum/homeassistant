@@ -7,6 +7,9 @@ from typing import Any
 from enum import (
     StrEnum,
 )
+from tuya_device_handlers.definition.sensor import (
+    TuyaSensorDefinition,
+)
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorStateClass,
@@ -19,7 +22,6 @@ from homeassistant.const import (
 from ...sensor import (
     XTSensorEntity,
     XTSensorEntityDescription,
-    TuyaDPCodeWrapper,
 )
 from ...multi_manager.multi_manager import (
     XTDevice,
@@ -158,11 +160,13 @@ class InkbirdSensorEntityDescription(XTSensorEntityDescription):
         device: XTDevice,
         device_manager: MultiManager,
         description: XTSensorEntityDescription,
-        dpcode_wrapper: TuyaDPCodeWrapper,
+        definition: TuyaSensorDefinition,
+        supported_descriptors: dict[str, tuple[XTSensorEntityDescription, ...]],
     ) -> XTSensorEntity:
         return XTSensorEntity(
             device=device,
             device_manager=device_manager,
             description=description,
-            dpcode_wrapper=dpcode_wrapper,
+            definition=definition,
+            supported_descriptors=supported_descriptors,
         )

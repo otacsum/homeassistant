@@ -27,11 +27,17 @@
     },
     "entity": {
         "binary_sensor": {
+            "bag_full": {
+                "name": "\u6ee1\u888b"
+            },
             "carbon_dioxide": {
                 "name": "\u4e8c\u6c27\u5316\u78b3"
             },
             "carbon_monoxide": {
                 "name": "\u4e00\u6c27\u5316\u78b3"
+            },
+            "cover_off": {
+                "name": "\u76d6\u4f4f"
             },
             "defrost": {
                 "name": "\u9664\u971c"
@@ -71,6 +77,12 @@
             }
         },
         "button": {
+            "factory_reset": {
+                "name": "\u6062\u590d\u51fa\u5382\u8bbe\u7f6e"
+            },
+            "manual_clean": {
+                "name": "\u624b\u52a8\u6e05\u6d01"
+            },
             "reset_duster_cloth": {
                 "name": "\u91cd\u7f6e\u9664\u5c18\u5e03"
             },
@@ -105,6 +117,12 @@
             }
         },
         "event": {
+            "doorbell_message": {
+                "name": "\u95e8\u94c3\u6d88\u606f"
+            },
+            "doorbell_picture": {
+                "name": "\u95e8\u94c3\u56fe\u7247"
+            },
             "numbered_button": {
                 "name": "\u6309\u94ae {button_number}",
                 "state_attributes": {
@@ -152,13 +170,16 @@
                 "name": "\u7535\u6c60\u5907\u7528\u50a8\u5907"
             },
             "cloud_recipe": {
-                "name": "\u4e91\u98df\u8c31"
+                "name": "\u4e91\u914d\u65b9"
             },
             "cook_temperature": {
                 "name": "\u70f9\u996a\u6e29\u5ea6"
             },
             "cook_time": {
                 "name": "\u70f9\u996a\u65f6\u95f4"
+            },
+            "delay_clean_time": {
+                "name": "\u5ef6\u8fdf\u6e05\u6d01\u65f6\u95f4"
             },
             "down_delay": {
                 "name": "\u4e0b\u884c\u5ef6\u8fdf"
@@ -469,14 +490,20 @@
                 }
             },
             "relay_status": {
-                "name": "\u4e0a\u7535\u884c\u4e3a",
                 "state": {
-                    "last": "\u8bb0\u4f4f\u6700\u540e\u7684\u72b6\u6001",
-                    "memory": "\u8bb0\u4f4f\u6700\u540e\u7684\u72b6\u6001",
                     "off": "\u5173\u95ed",
                     "on": "\u5f00\u542f",
                     "power_off": "\u5173\u95ed",
                     "power_on": "\u5f00\u542f"
+                }
+            },
+            "siren_mode": {
+                "name": "\u8b66\u7b1b\u6a21\u5f0f",
+                "state": {
+                    "alarm_light": "\u706f\u5149",
+                    "alarm_sound": "\u58f0\u97f3",
+                    "alarm_sound_light": "\u58f0\u5149",
+                    "normal": "\u6b63\u5e38"
                 }
             },
             "target_humidity": {
@@ -559,7 +586,7 @@
                 "name": "\u7a7a\u6c14\u8d28\u91cf",
                 "state": {
                     "good": "\u826f\u597d",
-                    "great": "\u4f1f\u5927",
+                    "great": "\u6781\u4f73",
                     "mild": "\u8f7b\u5fae",
                     "severe": "\u4e25\u91cd"
                 }
@@ -593,6 +620,17 @@
             "carbon_monoxide": {
                 "name": "\u4e00\u6c27\u5316\u78b3"
             },
+            "cat_litter_box_status": {
+                "name": "\u72b6\u6001",
+                "state": {
+                    "clean": "\u6e05\u6d01\u4e2d",
+                    "empty": "\u6e05\u7a7a\u4e2d",
+                    "level": "\u8c03\u5e73\u4e2d",
+                    "sleep": "\u4f11\u7720\u4e2d",
+                    "standby": "\u5f85\u673a",
+                    "uv": "\u6d88\u6bd2\u4e2d"
+                }
+            },
             "cat_weight": {
                 "name": "\u732b\u4f53\u91cd"
             },
@@ -619,6 +657,12 @@
             },
             "duster_cloth_life": {
                 "name": "\u9664\u5c18\u5e03\u5bff\u547d"
+            },
+            "excretion_time_day": {
+                "name": "\u6392\u6cc4\u65f6\u957f"
+            },
+            "excretion_times_day": {
+                "name": "\u6392\u6cc4\u6b21\u6570\uff08\u5929\uff09"
             },
             "feels_like_temperature": {
                 "name": "\u4f53\u611f"
@@ -873,6 +917,9 @@
             },
             "arm_beep": {
                 "name": "\u5e03\u9632\u8702\u9e23"
+            },
+            "auto_clean": {
+                "name": "\u81ea\u52a8\u6e05\u6d01"
             },
             "battery_lock": {
                 "name": "\u7535\u6c60\u9501"

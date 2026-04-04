@@ -307,10 +307,7 @@
                 }
             },
             "relay_status": {
-                "name": "Ligar os modos",
                 "state": {
-                    "last": "Lembrar \u00faltimo estado",
-                    "memory": "Lembrar \u00faltimo estado",
                     "off": "Desligado",
                     "on": "Ligado",
                     "power_off": "Desligado",

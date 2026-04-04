@@ -11,7 +11,8 @@
             "reauth_user_code": {
                 "data": {
                     "user_code": "Felhaszn\u00e1l\u00f3i k\u00f3d"
-                }
+                },
+                "description": "A Tuya integr\u00e1ci\u00f3 mostant\u00f3l tov\u00e1bbfejlesztett bejelentkez\u00e9si m\u00f3dszert haszn\u00e1l. A Smart Life vagy Tuya Smart fi\u00f3kkal val\u00f3 \u00fajrahiteles\u00edt\u00e9shez meg kell adnia a felhaszn\u00e1l\u00f3i k\u00f3dj\u00e1t.\n\nEzt a k\u00f3dot a Smart Life alkalmaz\u00e1sban vagy a Tuya Smart alkalmaz\u00e1sban tal\u00e1lja meg a **Be\u00e1ll\u00edt\u00e1sok** > **Fi\u00f3k \u00e9s biztons\u00e1g** k\u00e9perny\u0151n, \u00e9s \u00edrja be a **Felhaszn\u00e1l\u00f3i k\u00f3d** mez\u0151ben l\u00e1that\u00f3 k\u00f3dot. A felhaszn\u00e1l\u00f3i k\u00f3d megk\u00fcl\u00f6nb\u00f6zteti a kis- \u00e9s nagybet\u0171ket, ez\u00e9rt \u00fcgyeljen arra, hogy pontosan az alkalmaz\u00e1sban megjelen\u0151 m\u00f3don adja meg."
             },
             "scan": {
                 "description": "A Smart Life alkalmaz\u00e1ssal vagy a Tuya Smart alkalmaz\u00e1ssal szkennelje be az al\u00e1bbi QR-k\u00f3dot a bejelentkez\u00e9s befejez\u00e9s\u00e9hez.\n\nFolytassa a k\u00f6vetkez\u0151 l\u00e9p\u00e9ssel, ha ezt a l\u00e9p\u00e9st elv\u00e9gezte az alkalmaz\u00e1sban."
@@ -19,17 +20,27 @@
             "user": {
                 "data": {
                     "user_code": "Felhaszn\u00e1l\u00f3i k\u00f3d"
-                }
+                },
+                "description": "Adja meg a Smart Life vagy Tuya Smart felhaszn\u00e1l\u00f3i k\u00f3dj\u00e1t.\n\nEzt a k\u00f3dot a Smart Life alkalmaz\u00e1sban vagy a Tuya Smart alkalmaz\u00e1sban tal\u00e1lja meg a **Be\u00e1ll\u00edt\u00e1sok** > **Fi\u00f3k \u00e9s biztons\u00e1g** k\u00e9perny\u0151n, \u00e9s \u00edrja be a **Felhaszn\u00e1l\u00f3i k\u00f3d** mez\u0151ben l\u00e1that\u00f3 k\u00f3dot. A felhaszn\u00e1l\u00f3i k\u00f3d megk\u00fcl\u00f6nb\u00f6zteti a kis- \u00e9s nagybet\u0171ket, ez\u00e9rt \u00fcgyeljen arra, hogy pontosan az alkalmaz\u00e1sban megjelen\u0151 m\u00f3don adja meg."
             }
         }
     },
     "entity": {
         "binary_sensor": {
+            "bag_full": {
+                "name": "Zs\u00e1k tele"
+            },
             "carbon_dioxide": {
                 "name": "Sz\u00e9n-dioxid (CO\u2082)"
             },
             "carbon_monoxide": {
                 "name": "Sz\u00e9n-monoxid (CO)"
+            },
+            "cover_off": {
+                "name": "Fed\u00e9l nyitva"
+            },
+            "defrost": {
+                "name": "J\u00e9gmentes\u00edt\u00e9s"
             },
             "drop": {
                 "name": "Es\u00e9s"
@@ -49,14 +60,29 @@
             "pressure": {
                 "name": "Nyom\u00e1s"
             },
+            "tankfull": {
+                "name": "Tart\u00e1ly tele"
+            },
             "tilt": {
                 "name": "Tilt\u00e1s"
             },
+            "valve": {
+                "name": "Szelep"
+            },
             "voc": {
                 "name": "VOC (ill\u00e9kony szerves vegy\u00fcletek)"
+            },
+            "wet": {
+                "name": "Nedves"
             }
         },
         "button": {
+            "factory_reset": {
+                "name": "Gy\u00e1ri vissza\u00e1ll\u00edt\u00e1s"
+            },
+            "manual_clean": {
+                "name": "K\u00e9zi tiszt\u00edt\u00e1s"
+            },
             "reset_duster_cloth": {
                 "name": "Null\u00e1zd a porrongyot"
             },
@@ -82,9 +108,21 @@
             },
             "curtain": {
                 "name": "F\u00fcgg\u00f6ny"
+            },
+            "indexed_curtain": {
+                "name": "{index}. f\u00fcgg\u00f6ny"
+            },
+            "indexed_door": {
+                "name": "{index}. ajt\u00f3"
             }
         },
         "event": {
+            "doorbell_message": {
+                "name": "Cseng\u0151 \u00fczenet"
+            },
+            "doorbell_picture": {
+                "name": "Cseng\u0151 f\u00e9nyk\u00e9p"
+            },
             "numbered_button": {
                 "name": "Gomb {button_number}",
                 "state_attributes": {
@@ -102,6 +140,9 @@
             "backlight": {
                 "name": "H\u00e1tt\u00e9rvil\u00e1g\u00edt\u00e1s"
             },
+            "indexed_light": {
+                "name": "{index}. l\u00e1mpa"
+            },
             "light": {
                 "name": "Vil\u00e1g\u00edt\u00e1s"
             },
@@ -110,11 +151,35 @@
             }
         },
         "number": {
+            "alarm_delay": {
+                "name": "Riaszt\u00e1s k\u00e9sleltet\u00e9s"
+            },
             "alarm_duration": {
                 "name": "Riaszt\u00e1s id\u0151tartama"
             },
+            "alarm_maximum": {
+                "name": "Riaszt\u00e1s maximum"
+            },
+            "alarm_minimum": {
+                "name": "Riaszt\u00e1s minimum"
+            },
+            "arm_delay": {
+                "name": "\u00c9les\u00edt\u00e9s k\u00e9sleltet\u00e9s"
+            },
+            "battery_backup_reserve": {
+                "name": "Akkumul\u00e1tor tartal\u00e9k"
+            },
             "cloud_recipe": {
                 "name": "Felh\u0151 recept"
+            },
+            "cook_temperature": {
+                "name": "F\u0151z\u00e9si h\u0151m\u00e9rs\u00e9klet"
+            },
+            "cook_time": {
+                "name": "F\u0151z\u00e9si id\u0151"
+            },
+            "delay_clean_time": {
+                "name": "K\u00e9sleltetett tiszt\u00edt\u00e1si id\u0151"
             },
             "down_delay": {
                 "name": "Le\u00e1ll\u00e1si k\u00e9sleltet\u00e9s"
@@ -128,8 +193,32 @@
             "heat_preservation_time": {
                 "name": "H\u0151m\u00e9rs\u00e9klet-megtart\u00e1si id\u0151"
             },
+            "indexed_cook_temperature": {
+                "name": "F\u0151z\u00e9si h\u0151m\u00e9rs\u00e9klet {index}"
+            },
+            "indexed_irrigation_duration": {
+                "name": "\u00d6nt\u00f6z\u00e9si id\u0151tartam {index}"
+            },
+            "indexed_maximum_brightness": {
+                "name": "Maxim\u00e1lis f\u00e9nyer\u0151 {index}"
+            },
+            "indexed_minimum_brightness": {
+                "name": "Minim\u00e1lis f\u00e9nyer\u0151 {index}"
+            },
+            "indexed_temperature": {
+                "name": "H\u0151m\u00e9rs\u00e9klet {index}"
+            },
+            "installation_height": {
+                "name": "Telep\u00edt\u00e9si magass\u00e1g"
+            },
+            "inverter_output_power_limit": {
+                "name": "Inverter kimeneti teljes\u00edtm\u00e9nykorl\u00e1t"
+            },
             "maximum_brightness": {
                 "name": "Maxim\u00e1lis f\u00e9nyer\u0151"
+            },
+            "maximum_liquid_depth": {
+                "name": "Maxim\u00e1lis folyad\u00e9kszint"
             },
             "minimum_brightness": {
                 "name": "Minim\u00e1lis f\u00e9nyer\u0151"
@@ -148,6 +237,15 @@
             },
             "sensitivity": {
                 "name": "\u00c9rz\u00e9kenys\u00e9g"
+            },
+            "siren_duration": {
+                "name": "Szir\u00e9na id\u0151tartam"
+            },
+            "target_dis_closest": {
+                "name": "Legk\u00f6zelebbi c\u00e9l t\u00e1vols\u00e1ga"
+            },
+            "temp_correction": {
+                "name": "H\u0151m\u00e9rs\u00e9klet korrekci\u00f3"
             },
             "temperature": {
                 "name": "H\u0151m\u00e9rs\u00e9klet"
@@ -186,6 +284,7 @@
                 }
             },
             "blanket_level": {
+                "name": "Szint",
                 "state": {
                     "level_1": "Alacsony",
                     "level_10": "Magas",
@@ -241,6 +340,23 @@
                     "1": "Magas \u00e9rz\u00e9kenys\u00e9g"
                 }
             },
+            "desk_level": {
+                "name": "Szint",
+                "state": {
+                    "level_1": "1. szint",
+                    "level_2": "2. szint",
+                    "level_3": "3. szint",
+                    "level_4": "4. szint"
+                }
+            },
+            "desk_up_down": {
+                "name": "Fel/Le",
+                "state": {
+                    "down": "Le",
+                    "stop": "\u00c1llj",
+                    "up": "Fel"
+                }
+            },
             "fingerbot_mode": {
                 "name": "\u00dczemm\u00f3d",
                 "state": {
@@ -292,9 +408,34 @@
                 }
             },
             "indexed_blanket_level": {
+                "name": "{index}. szint",
                 "state": {
                     "level_1": "Alacsony",
-                    "level_10": "Magas"
+                    "level_10": "Magas",
+                    "level_2": "Szint 2",
+                    "level_3": "Szint 3",
+                    "level_4": "Szint 4",
+                    "level_5": "Szint 5",
+                    "level_6": "Szint 6",
+                    "level_7": "Szint 7",
+                    "level_8": "Szint 8",
+                    "level_9": "Szint 9"
+                }
+            },
+            "indexed_led_type": {
+                "name": "{index}. l\u00e1mpa forr\u00e1s t\u00edpus",
+                "state": {
+                    "halogen": "Halog\u00e9n",
+                    "incandescent": "Izz\u00f3",
+                    "led": "LED"
+                }
+            },
+            "inverter_work_mode": {
+                "name": "Inverter \u00fczemm\u00f3d",
+                "state": {
+                    "manual": "K\u00e9zi \u00fczemm\u00f3d",
+                    "self_powered": "\u00d6nell\u00e1t\u00f3",
+                    "time_of_use": "Id\u0151z\u00f3n\u00e1s"
                 }
             },
             "ipc_work_mode": {
@@ -334,6 +475,13 @@
                     "2": "Magas"
                 }
             },
+            "odor_elimination_mode": {
+                "name": "Szagtalan\u00edt\u00e1s m\u00f3d",
+                "state": {
+                    "interim": "\u00c1tmeneti",
+                    "smart": "Okos"
+                }
+            },
             "record_mode": {
                 "name": "Felv\u00e9tel m\u00f3d",
                 "state": {
@@ -342,14 +490,23 @@
                 }
             },
             "relay_status": {
-                "name": "Bekapcsol\u00e1si viselked\u00e9s",
+                "name": "Bekapcsol\u00e1skori viselked\u00e9s",
                 "state": {
-                    "last": "Utols\u00f3 \u00e1llapot megjegyz\u00e9se",
-                    "memory": "Utols\u00f3 \u00e1llapot megjegyz\u00e9se",
+                    "last": "El\u0151z\u0151 \u00e1llapot",
+                    "memory": "El\u0151z\u0151 \u00e1llapot",
                     "off": "Ki",
                     "on": "Be",
                     "power_off": "Ki",
                     "power_on": "Be"
+                }
+            },
+            "siren_mode": {
+                "name": "Szir\u00e9na m\u00f3d",
+                "state": {
+                    "alarm_light": "F\u00e9ny",
+                    "alarm_sound": "Hang",
+                    "alarm_sound_light": "Hang \u00e9s f\u00e9ny",
+                    "normal": "Norm\u00e1l"
                 }
             },
             "target_humidity": {
@@ -425,6 +582,9 @@
             }
         },
         "sensor": {
+            "air_pressure": {
+                "name": "L\u00e9gnyom\u00e1s"
+            },
             "air_quality": {
                 "name": "Leveg\u0151min\u0151s\u00e9g",
                 "state": {
@@ -448,6 +608,12 @@
             "battery": {
                 "name": "Elem/Akku"
             },
+            "battery_power": {
+                "name": "Akkumul\u00e1tor teljes\u00edtm\u00e9ny"
+            },
+            "battery_soc": {
+                "name": "Akkumul\u00e1tor t\u00f6lt\u00f6tts\u00e9g"
+            },
             "battery_state": {
                 "name": "Akkumul\u00e1tor \u00e1llapota"
             },
@@ -456,6 +622,20 @@
             },
             "carbon_monoxide": {
                 "name": "Sz\u00e9n-monoxid"
+            },
+            "cat_litter_box_status": {
+                "name": "\u00c1llapot",
+                "state": {
+                    "clean": "Tiszt\u00edt\u00e1s",
+                    "empty": "\u00dcr\u00edt\u00e9s",
+                    "level": "Egyenget\u00e9s",
+                    "sleep": "Alv\u00f3",
+                    "standby": "K\u00e9szenl\u00e9tben",
+                    "uv": "Fert\u0151tlen\u00edt\u00e9s"
+                }
+            },
+            "cat_weight": {
+                "name": "Macska s\u00falya"
             },
             "cleaning_area": {
                 "name": "Takar\u00edt\u00e1si ter\u00fclet"
@@ -472,8 +652,23 @@
             "current_temperature": {
                 "name": "Aktu\u00e1lis h\u0151m\u00e9rs\u00e9klet"
             },
+            "depth": {
+                "name": "M\u00e9lys\u00e9g"
+            },
+            "dew_point_temperature": {
+                "name": "Harmatpont"
+            },
             "duster_cloth_life": {
                 "name": "Porrongy \u00e9lettartam"
+            },
+            "excretion_time_day": {
+                "name": "\u00dcr\u00edt\u00e9si id\u0151tartam"
+            },
+            "excretion_times_day": {
+                "name": "\u00dcr\u00edt\u00e9sek sz\u00e1ma (napi)"
+            },
+            "feels_like_temperature": {
+                "name": "H\u0151\u00e9rzet"
             },
             "filter_duration": {
                 "name": "Sz\u0171r\u0151 \u00e9lettartama"
@@ -490,11 +685,26 @@
             "gas": {
                 "name": "G\u00e1z"
             },
+            "heat_index_temperature": {
+                "name": "H\u0151index"
+            },
             "humidity": {
                 "name": "P\u00e1ratartalom"
             },
+            "humidity_outdoor": {
+                "name": "K\u00fclt\u00e9ri p\u00e1ratartalom"
+            },
             "illuminance": {
                 "name": "F\u00e9nyer\u0151ss\u00e9g"
+            },
+            "indexed_humidity_outdoor": {
+                "name": "K\u00fclt\u00e9ri p\u00e1ratartalom {index}. csatorna"
+            },
+            "indexed_temperature_external": {
+                "name": "M\u00e9r\u0151szonda h\u0151m\u00e9rs\u00e9klet csatorna {index}"
+            },
+            "inverter_output_power": {
+                "name": "Inverter kimeneti teljes\u00edtm\u00e9ny"
             },
             "last_amount": {
                 "name": "Legut\u00f3bbi mennyis\u00e9g"
@@ -502,7 +712,29 @@
             "last_operation_duration": {
                 "name": "Legut\u00f3bbi m\u0171velet id\u0151tartama"
             },
+            "lifetime_battery_charge_energy": {
+                "name": "\u00c9lettartam akkumul\u00e1tor t\u00f6lt\u00e9si energia"
+            },
+            "lifetime_battery_discharge_energy": {
+                "name": "\u00c9lettartam akkumul\u00e1tor kis\u00fct\u00e9si energia"
+            },
+            "lifetime_inverter_output_energy": {
+                "name": "\u00c9lettartam inverter kimeneti energia"
+            },
+            "lifetime_offgrid_port_energy": {
+                "name": "\u00c9lettartam h\u00e1l\u00f3zatf\u00fcggetlen port energia"
+            },
+            "lifetime_pv_energy": {
+                "name": "\u00c9lettartam napelemes energia"
+            },
+            "liquid_depth": {
+                "name": "Folyad\u00e9kszint"
+            },
+            "liquid_level": {
+                "name": "Folyad\u00e9kszint"
+            },
             "liquid_state": {
+                "name": "Folyad\u00e9k \u00e1llapot",
                 "state": {
                     "lower_alarm": "Alacsony",
                     "normal": "Norm\u00e1l",
@@ -516,9 +748,12 @@
                 "name": "Met\u00e1n"
             },
             "odor_elimination_status": {
+                "name": "\u00c1llapot",
                 "state": {
+                    "charge_done": "T\u00f6lt\u00e9s k\u00e9sz",
                     "charging": "T\u00f6lt\u00e9s",
-                    "standby": "K\u00e9szenl\u00e9tben"
+                    "standby": "K\u00e9szenl\u00e9tben",
+                    "work": "M\u0171k\u00f6dik"
                 }
             },
             "phase_a_current": {
@@ -563,8 +798,14 @@
             "precipitation_intensity": {
                 "name": "Csapad\u00e9k intenzit\u00e1sa"
             },
+            "precipitation_today": {
+                "name": "Mai \u00f6sszes csapad\u00e9k"
+            },
             "pump_time": {
                 "name": "V\u00edzkeringet\u0151 szivatty\u00fa id\u0151tartama"
+            },
+            "pv_channel_power": {
+                "name": "Napelemes csatorna {index} teljes\u00edtm\u00e9ny"
             },
             "remaining_time": {
                 "name": "H\u00e1tral\u00e9v\u0151 id\u0151"
@@ -595,6 +836,9 @@
             "status": {
                 "name": "\u00c1llapot"
             },
+            "supply_frequency": {
+                "name": "T\u00e1pfrekvencia"
+            },
             "temperature": {
                 "name": "H\u0151m\u00e9rs\u00e9klet"
             },
@@ -613,20 +857,32 @@
             "total_cleaning_times": {
                 "name": "Teljes takar\u00edt\u00e1si id\u0151"
             },
+            "total_dissolved_solids": {
+                "name": "\u00d6sszes oldott anyag"
+            },
             "total_energy": {
                 "name": "Teljes energiamennyis\u00e9g"
             },
             "total_operating_time": {
                 "name": "Teljes \u00fczemid\u0151"
             },
+            "total_power": {
+                "name": "\u00d6sszes teljes\u00edtm\u00e9ny"
+            },
             "total_production": {
                 "name": "Teljes termel\u00e9s"
+            },
+            "total_pv_power": {
+                "name": "\u00d6sszes napelemes teljes\u00edtm\u00e9ny"
             },
             "total_volatile_organic_compound": {
                 "name": "\u00d6sszes ill\u00e9kony szerves vegy\u00fclet (VOC)"
             },
             "total_watering_time": {
                 "name": "Teljes \u00f6nt\u00f6z\u00e9si id\u0151"
+            },
+            "uv_index": {
+                "name": "UV index"
             },
             "uv_runtime": {
                 "name": "UV m\u0171k\u00f6d\u00e9si id\u0151"
@@ -641,6 +897,7 @@
                 "name": "V\u00edzszint"
             },
             "water_level_state": {
+                "name": "V\u00edzszint",
                 "state": {
                     "level_1": "Alacsony",
                     "level_2": "K\u00f6zepes",
@@ -650,6 +907,9 @@
             "water_time": {
                 "name": "V\u00edzhaszn\u00e1lat id\u0151tartama"
             },
+            "wind_chill_index_temperature": {
+                "name": "Sz\u00e9lh\u0171t\u00e9si index"
+            },
             "wind_direction": {
                 "name": "Sz\u00e9lir\u00e1ny"
             }
@@ -657,6 +917,12 @@
         "switch": {
             "anion": {
                 "name": "Anion"
+            },
+            "arm_beep": {
+                "name": "\u00c9les\u00edt\u00e9si hangjelz\u00e9s"
+            },
+            "auto_clean": {
+                "name": "Automatikus tiszt\u00edt\u00e1s"
             },
             "battery_lock": {
                 "name": "Akkumul\u00e1tor z\u00e1r"
@@ -685,11 +951,26 @@
             "flip": {
                 "name": "\u00c1tford\u00edt"
             },
+            "frost_protection": {
+                "name": "Fagyv\u00e9delem"
+            },
             "heat_preservation": {
                 "name": "H\u0151megtart\u00e1s"
             },
             "humidification": {
                 "name": "P\u00e1r\u00e1s\u00edt\u00e1s"
+            },
+            "indexed_alarm": {
+                "name": "{index}. riaszt\u00e1s"
+            },
+            "indexed_socket": {
+                "name": "{index}. aljzat"
+            },
+            "indexed_switch": {
+                "name": "{index}. kapcsol\u00f3"
+            },
+            "indexed_usb": {
+                "name": "{index}. USB"
             },
             "ionizer": {
                 "name": "Ioniz\u00e1l\u00f3"
@@ -703,6 +984,9 @@
             "motion_tracking": {
                 "name": "Mozg\u00e1sk\u00f6vet\u00e9s"
             },
+            "music": {
+                "name": "Zene"
+            },
             "mute": {
                 "name": "N\u00e9m\u0142t\u00e1s"
             },
@@ -714,6 +998,9 @@
             },
             "open_window_detection": {
                 "name": "Nyitott ablak \u00e9szlel\u00e9se"
+            },
+            "output_power_limit": {
+                "name": "Kimeneti teljes\u00edtm\u00e9nykorl\u00e1t"
             },
             "oxygen_bar": {
                 "name": "Oxygen bar"
@@ -739,6 +1026,9 @@
             "reverse": {
                 "name": "Ford\u00edtott"
             },
+            "siren": {
+                "name": "Szir\u00e9na"
+            },
             "sleep": {
                 "name": "Alv\u00e1s"
             },
@@ -747,6 +1037,9 @@
             },
             "slow_feed": {
                 "name": "Lass\u00fa etet\u00e9s"
+            },
+            "snooze": {
+                "name": "Szund\u00edt\u00e1s"
             },
             "socket": {
                 "name": "Csatlakoz\u00f3"
@@ -790,6 +1083,25 @@
             "wide_dynamic_range": {
                 "name": "Sz\u00e9les dinamikatartom\u00e1ny"
             }
+        },
+        "valve": {
+            "indexed_valve": {
+                "name": "Szelep {index}"
+            },
+            "valve": {
+                "name": "Szelep"
+            }
+        }
+    },
+    "exceptions": {
+        "action_dpcode_not_found": {
+            "message": "A m\u0171velet nem hajthat\u00f3 v\u00e9gre, mivel az eszk\u00f6z nem biztos\u00edtja a megfelel\u0151 funkci\u00f3kulcsot (a k\u00f6vetkez\u0151k egyike v\u00e1rt: {expected} a k\u00f6vetkez\u0151kb\u0151l: {available})."
+        }
+    },
+    "issues": {
+        "deprecated_entity_new_valve": {
+            "description": "A Tuya entit\u00e1s `{entity}` elavult, egy \u00faj szelep entit\u00e1s v\u00e1ltotta fel.\nK\u00e9rj\u00fck, friss\u00edtse az ir\u00e1ny\u00edt\u00f3pultokat, automatiz\u00e1l\u00e1sokat \u00e9s szkripteket, tiltsa le a `{entity}` entit\u00e1st \u00e9s t\u00f6ltse \u00fajra az integr\u00e1ci\u00f3t/ind\u00edtsa \u00fajra a Home Assistantot a probl\u00e9ma megold\u00e1s\u00e1hoz.",
+            "title": "{name} elavult"
         }
     }
 }

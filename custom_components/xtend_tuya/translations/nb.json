@@ -153,8 +153,6 @@
             },
             "relay_status": {
                 "state": {
-                    "last": "Husk siste tilstand",
-                    "memory": "Husk siste tilstand",
                     "off": "Av",
                     "on": "P\u00e5",
                     "power_off": "Av",

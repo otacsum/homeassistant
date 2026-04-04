@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 from typing import cast
+from tuya_device_handlers.definition.vacuum import (
+    TuyaVacuumDefinition,
+    get_default_definition,
+)
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.components.vacuum.const import (
-    VacuumActivity,
-)
 
 from .multi_manager.multi_manager import (
     MultiManager,
@@ -22,10 +23,6 @@ from .entity import (
 )
 from .ha_tuya_integration.tuya_integration_imports import (
     TuyaVacuumEntity,
-    TuyaDeviceWrapper,
-    TuyaVacuumActionWrapper,
-    TuyaVacuumActivityWrapper,
-    TuyaDPCodeEnumWrapper,
 )
 
 CHARGE_DPCODE = (XTDPCode.SWITCH_CHARGE,)
@@ -73,13 +70,9 @@ async def async_setup_entry(
                 if device.category in supported_descriptors:
                     entities.append(
                         XTVacuumEntity(
-                            device,
-                            hass_data.manager,
-                            action_wrapper=TuyaVacuumActionWrapper.find_dpcode(device),
-                            activity_wrapper=TuyaVacuumActivityWrapper.find_dpcode(device),
-                            fan_speed_wrapper=TuyaDPCodeEnumWrapper.find_dpcode(
-                                device, XTDPCode.SUCTION, prefer_function=True
-                            ),
+                            device=device,
+                            device_manager=hass_data.manager,
+                            definition=get_default_definition(device),
                         )
                     )
         async_add_entities(entities)
@@ -98,19 +91,14 @@ class XTVacuumEntity(XTEntity, TuyaVacuumEntity):
         self,
         device: XTDevice,
         device_manager: MultiManager,
-        *,
-        action_wrapper: TuyaDeviceWrapper[str] | None,
-        activity_wrapper: TuyaDeviceWrapper[VacuumActivity] | None,
-        fan_speed_wrapper: TuyaDeviceWrapper[str] | None,
+        definition: TuyaVacuumDefinition,
     ) -> None:
         """Init Tuya vacuum."""
         super(XTVacuumEntity, self).__init__(device, device_manager)
         super(XTEntity, self).__init__(
-            device,
-            device_manager,  # type: ignore
-            action_wrapper=action_wrapper,
-            activity_wrapper=activity_wrapper,
-            fan_speed_wrapper=fan_speed_wrapper,
+            device=device,
+            device_manager=device_manager,  # type: ignore
+            definition=definition,
         )
         self.device = device
         self.device_manager = device_manager

@@ -298,10 +298,7 @@
                 }
             },
             "relay_status": {
-                "name": "Virta p\u00e4\u00e4lle -k\u00e4ytt\u00e4ytyminen",
                 "state": {
-                    "last": "Muista viimeinen tila",
-                    "memory": "Muista viimeinen tila",
                     "off": "Pois",
                     "on": "P\u00e4\u00e4ll\u00e4",
                     "power_off": "Pois",

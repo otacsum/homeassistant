@@ -280,10 +280,7 @@
                 }
             },
             "relay_status": {
-                "name": "\uc804\uc6d0 \ucf1c\uae30 \ub3d9\uc791",
                 "state": {
-                    "last": "\ub9c8\uc9c0\ub9c9 \uc0c1\ud0dc \uae30\uc5b5",
-                    "memory": "\ub9c8\uc9c0\ub9c9 \uc0c1\ud0dc \uae30\uc5b5",
                     "off": "\uaebc\uc9d0",
                     "on": "\ucf1c\uc9d0",
                     "power_off": "\uaebc\uc9d0",

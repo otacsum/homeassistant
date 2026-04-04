@@ -346,14 +346,16 @@
                 }
             },
             "relay_status": {
-                "name": "\u05d4\u05ea\u05e0\u05d4\u05d2\u05d5\u05ea \u05d1\u05e2\u05ea \u05d4\u05e4\u05e2\u05dc\u05d4 \u05de\u05d7\u05d3\u05e9",
                 "state": {
-                    "last": "\u05d6\u05db\u05d5\u05e8 \u05de\u05e6\u05d1 \u05d0\u05d7\u05e8\u05d5\u05df",
-                    "memory": "\u05d6\u05db\u05d5\u05e8 \u05de\u05e6\u05d1 \u05d0\u05d7\u05e8\u05d5\u05df",
                     "off": "\u05db\u05d1\u05d5\u05d9",
                     "on": "\u05de\u05d5\u05e4\u05e2\u05dc",
                     "power_off": "\u05db\u05d1\u05d5\u05d9",
                     "power_on": "\u05de\u05d5\u05e4\u05e2\u05dc"
+                }
+            },
+            "siren_mode": {
+                "state": {
+                    "normal": "\u05e8\u05d2\u05d9\u05dc"
                 }
             },
             "target_humidity": {
@@ -446,6 +448,11 @@
             },
             "carbon_monoxide": {
                 "name": "\u05e4\u05d7\u05de\u05df \u05d7\u05d3 \u05d7\u05de\u05e6\u05e0\u05d9"
+            },
+            "cat_litter_box_status": {
+                "state": {
+                    "standby": "\u05d1\u05d4\u05de\u05ea\u05e0\u05d4"
+                }
             },
             "cleaning_area": {
                 "name": "\u05de\u05e0\u05e7\u05d4 \u05d0\u05d6\u05d5\u05e8"

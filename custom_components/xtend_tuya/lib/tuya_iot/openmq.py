@@ -99,11 +99,6 @@ class TuyaOpenMQ(threading.Thread):
         self.topics: str = topics
 
     def _get_mqtt_config(self, first_pass=True) -> TuyaMQConfig:
-        if self.api.is_connect() is False and self.api.reconnect() is False:
-            return TuyaMQConfig()
-        if self.api.token_info.is_valid() is False:
-            return TuyaMQConfig()
-
         path = (
             TO_C_CUSTOM_MQTT_CONFIG_API
             if (self.api.auth_type == AuthType.CUSTOM)
@@ -120,14 +115,12 @@ class TuyaOpenMQ(threading.Thread):
         }
         response = self.api.post(path, body)
         if response.get("success", False):
-            #logger.debug(f"[{self.class_id} MQTT] _get_mqtt_config response: {response}")
             pass
         else:
             logger.error(f"[{self.class_id} MQTT] _get_mqtt_config response: {response}", stack_info=True)
 
         if response.get("success", False) is False:
             if first_pass:
-                self.api.reconnect()
                 return self._get_mqtt_config(first_pass=False)
             return TuyaMQConfig()
 
@@ -178,7 +171,7 @@ class TuyaOpenMQ(threading.Thread):
             return
 
         msg_dict["data"] = decrypted_data
-        logger.debug(f"[{self.class_id} MQTT] on_message: {msg_dict}")
+        #logger.debug(f"[{self.class_id} MQTT] on_message: {msg_dict}")
 
         for listener in self.message_listeners:
             listener(msg_dict)

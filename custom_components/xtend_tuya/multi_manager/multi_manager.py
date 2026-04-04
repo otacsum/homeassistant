@@ -2,7 +2,7 @@ from __future__ import annotations
 import copy
 import importlib
 import os
-import asyncio
+import inspect
 from typing import Any, Literal, Optional, Callable
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
@@ -20,12 +20,15 @@ from ..const import (
     XTIRRemoteInformation,
     XTIRRemoteKeysInformation,
     XTLockingMechanism,
+    MESSAGE_SOURCE_TUYA_SHARING,
+    XTDeviceWatcherCategory,
 )
 from .shared.shared_classes import (
     DeviceWatcher,
     XTConfigEntry,  # noqa: F811
     XTDeviceMap,
     XTDevice,
+    XTTrackedDictionnary,
 )
 from .shared.threading import (
     XTConcurrencyManager,
@@ -132,7 +135,7 @@ class MultiManager:  # noqa: F811
                             package=__package__,
                         )
                     )
-                    LOGGER.debug(f"Plugin {load_path} loaded")
+                    #LOGGER.debug(f"Plugin {load_path} loaded")
                     instance: XTDeviceManagerInterface = plugin.get_plugin_instance()
                     concurrency_manager.add_coroutine(
                         instance.setup_from_entry(self.hass, self.config_entry, self)
@@ -205,6 +208,10 @@ class MultiManager:  # noqa: F811
             device.force_compatibility = True
         self._enable_multi_map_device_alignment()
         self._process_pending_messages()
+        for device in self.device_map.values():
+             if self.device_watcher.is_watched(device.id, [XTDeviceWatcherCategory.STATUS_CHANGES]):
+                if isinstance(device.status, XTTrackedDictionnary) is False:
+                    device.status = XTTrackedDictionnary(device.status) # type: ignore
 
     def _process_pending_messages(self):
         self.is_ready_for_messages = True
@@ -357,10 +364,12 @@ class MultiManager:  # noqa: F811
         return code, dpId, value, True
 
     def convert_device_report_status_list(
-        self, device_id: str, status_in: list
+        self, device_id: str, status_in: list, source: str
     ) -> list[dict[str, Any]]:
         status = copy.deepcopy(status_in)
         for item in status:
+            if "t" in item and source in [MESSAGE_SOURCE_TUYA_SHARING]:
+                item["t"] = int(item["t"] / 1000)  # Convert from ms to s
             code, dpId, value, result_ok = self._read_code_dpid_value_from_state(
                 device_id, item
             )
@@ -382,11 +391,15 @@ class MultiManager:  # noqa: F811
 
         new_message = self._convert_message_for_all_accounts(msg)
         self.device_watcher.report_message(
-            dev_id, f"on_message ({source}) => {msg} <=> {new_message}"
+            dev_id,
+            f"on_message ({source}) => {msg} <=> {new_message}",
+            XTDeviceWatcherCategory.MQTT,
         )
         if status_list := self._get_status_list_from_message(msg):
             self.device_watcher.report_message(
-                dev_id, f"On Message reporting ({source}): {msg}"
+                dev_id,
+                f"On Message reporting ({source}): {msg}",
+                XTDeviceWatcherCategory.MQTT,
             )
             self.multi_source_handler.register_status_list_from_source(
                 dev_id, source, status_list
@@ -451,7 +464,6 @@ class MultiManager:  # noqa: F811
             for command in commands:
                 command_code = command["code"]
                 command_value = command["value"]
-                LOGGER.debug(f"Base command : {command}")
                 vf_found = False
                 for virtual_function in virtual_function_list:
                     if (
@@ -493,7 +505,7 @@ class MultiManager:  # noqa: F811
                             device_id, regular_command, reverse_filters=True
                         ):
                             break
-                
+
                 # If it still didn't work, try sending the command aliases if they exist
                 if last_command_result is False:
                     alias_command: list[dict[str, Any]] = []
@@ -530,7 +542,12 @@ class MultiManager:  # noqa: F811
             ):
                 return stream_allocate
 
-    def send_lock_unlock_command(self, device: XTDevice, lock: bool, force_unlock_mechanism: XTLockingMechanism = XTLockingMechanism.AUTO) -> bool:
+    def send_lock_unlock_command(
+        self,
+        device: XTDevice,
+        lock: bool,
+        force_unlock_mechanism: XTLockingMechanism = XTLockingMechanism.AUTO,
+    ) -> bool:
         for account in self.accounts.values():
             if account.send_lock_unlock_command(device, lock, force_unlock_mechanism):
                 return True
@@ -544,6 +561,26 @@ class MultiManager:  # noqa: F811
         for account in self.accounts.values():
             if account.trigger_scene(home_id, scene_id):
                 return
+
+    def get_device_consumption_statistics_by_day(
+        self, device_id: str, start_day: str, end_day: str
+    ) -> dict[str, dict[float, float]] | None:
+        for account in self.accounts.values():
+            if stats := account.get_device_consumption_statistics_by_day(
+                device_id, start_day, end_day
+            ):
+                return stats
+        return None
+
+    def get_device_consumption_statistics_by_hour(
+        self, device_id: str, start_day_and_hour: str, end_day_and_hour: str
+    ) -> dict[str, dict[float, float]] | None:
+        for account in self.accounts.values():
+            if stats := account.get_device_consumption_statistics_by_hour(
+                device_id, start_day_and_hour, end_day_and_hour
+            ):
+                return stats
+        return None
 
     def update_device_online_status(self, device_id: str):
         if device := self.device_map.get(device_id, None):
@@ -572,9 +609,7 @@ class MultiManager:  # noqa: F811
     ):
         match function:
             case XTDeviceEntityFunctions.RECALCULATE_PERCENT_SCALE:
-                CloudFixes.fix_incorrect_percent_scale_forced(
-                    device, **kwargs
-                )
+                CloudFixes.fix_incorrect_percent_scale_forced(device, **kwargs)
 
     async def on_loading_finalized(
         self, hass: HomeAssistant, config_entry: XTConfigEntry
@@ -673,7 +708,7 @@ class MultiManager:  # noqa: F811
             for callback, *args in self.post_setup_callbacks[priority]:
                 if args is None:
                     args = tuple()
-                if asyncio.iscoroutinefunction(callback):
+                if inspect.iscoroutinefunction(callback):
                     await callback(*args)
                 else:
                     callback(*args)

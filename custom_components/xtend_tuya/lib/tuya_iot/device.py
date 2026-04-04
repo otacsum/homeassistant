@@ -8,7 +8,9 @@ from types import SimpleNamespace
 from typing import Any, Literal, Optional
 
 from .openapi import TuyaOpenAPI
-from .openlogging import logger
+from .openlogging import (
+    logger,  # noqa: F401
+)
 from .openmq import TuyaOpenMQ
 from .tuya_enums import AuthType
 
@@ -191,7 +193,7 @@ class TuyaDeviceManager:
         self.__update_device(device)
 
     def _on_device_other(self, device_id: str, biz_code: str, data: dict[str, Any]):
-        logger.debug(f"mq _on_device_other-> {device_id} -- {biz_code}")
+        # logger.debug(f"mq _on_device_other-> {device_id} -- {biz_code}")
 
         # bind device to user
         if biz_code == BIZCODE_BIND_USER:

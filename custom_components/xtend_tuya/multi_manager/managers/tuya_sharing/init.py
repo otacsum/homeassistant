@@ -74,6 +74,8 @@ from ....const import (
     XTDeviceSourcePriority,
     LOGGER,
     XTLockingMechanism,
+    XTDeviceWatcherCategory,
+    XTDeviceWatcherSpecialDevice,
 )
 
 
@@ -109,8 +111,12 @@ class XTTuyaSharingDeviceManagerInterface(XTDeviceManagerInterface):
         )
         if self.sharing_account:
             self.multi_manager.register_account(self)
-        LOGGER.debug(
-            f"Xtended Tuya {config_entry.title} {datetime.now() - last_time} for setup_from_entry {self.get_type_name()}"
+        self.multi_manager.device_watcher.report_message(
+            XTDeviceWatcherSpecialDevice.NOT_LINKED_TO_A_DEVICE,
+            f"Xtended Tuya {config_entry.title} {datetime.now() - last_time} for setup_from_entry {self.get_type_name()}",
+            XTDeviceWatcherCategory.XT_PERFORMANCE,
+            None,
+            False,
         )
 
     async def _init_from_entry(
@@ -142,12 +148,18 @@ class XTTuyaSharingDeviceManagerInterface(XTDeviceManagerInterface):
             sharing_device_manager.mq = tuya_integration_runtime_data.device_manager.mq
             sharing_device_manager.customer_api = (
                 XTSharingAPI.get_api_from_customer_api(
-                    tuya_integration_runtime_data.device_manager.customer_api
+                    tuya_integration_runtime_data.device_manager.customer_api,
                 )
             )
-            tuya_integration_runtime_data.device_manager.customer_api = sharing_device_manager.customer_api
-            tuya_integration_runtime_data.device_manager.device_repository.api = sharing_device_manager.customer_api
-            tuya_integration_runtime_data.device_manager.home_repository.api = sharing_device_manager.customer_api
+            tuya_integration_runtime_data.device_manager.customer_api = (
+                sharing_device_manager.customer_api
+            )
+            tuya_integration_runtime_data.device_manager.device_repository.api = (
+                sharing_device_manager.customer_api
+            )
+            tuya_integration_runtime_data.device_manager.home_repository.api = (
+                sharing_device_manager.customer_api
+            )
             # tuya_integration_runtime_data.device_manager.device_listeners.clear()
             # self.convert_tuya_devices_to_xt(tuya_integration_runtime_data.device_manager)
         else:
@@ -358,7 +370,9 @@ class XTTuyaSharingDeviceManagerInterface(XTDeviceManagerInterface):
         ):
             return get_tuya_platform_descriptors(platform)
 
-    def send_command(self, device_id: str, command: dict[str, Any], reverse_filters: bool = False) -> bool:
+    def send_command(
+        self, device_id: str, command: dict[str, Any], reverse_filters: bool = False
+    ) -> bool:
         if self.sharing_account is None:
             return False
         regular_commands: list[dict[str, Any]] = []
@@ -390,6 +404,7 @@ class XTTuyaSharingDeviceManagerInterface(XTDeviceManagerInterface):
             self.multi_manager.device_watcher.report_message(
                 device_id,
                 f"[Sharing]Send command failed, device id: {device_id}, commands: {regular_commands}, exception: {e}",
+                XTDeviceWatcherCategory.SHARING_API,
                 device=device,
             )
         return False
@@ -405,7 +420,12 @@ class XTTuyaSharingDeviceManagerInterface(XTDeviceManagerInterface):
             device_new.regular_tuya_device = device
         return device_new
 
-    def send_lock_unlock_command(self, device: XTDevice, lock: bool, force_unlock_mechanism: XTLockingMechanism = XTLockingMechanism.AUTO) -> bool:
+    def send_lock_unlock_command(
+        self,
+        device: XTDevice,
+        lock: bool,
+        force_unlock_mechanism: XTLockingMechanism = XTLockingMechanism.AUTO,
+    ) -> bool:
         if self.sharing_account is None:
             return False
         return self.sharing_account.device_manager.send_lock_unlock_command(

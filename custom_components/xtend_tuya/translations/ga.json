@@ -27,11 +27,17 @@
     },
     "entity": {
         "binary_sensor": {
+            "bag_full": {
+                "name": "M\u00e1la l\u00e1n"
+            },
             "carbon_dioxide": {
                 "name": "D\u00e9-ocsa\u00edd charb\u00f3in"
             },
             "carbon_monoxide": {
                 "name": "Aonocsa\u00edd charb\u00f3in"
+            },
+            "cover_off": {
+                "name": "Cl\u00fadaigh"
             },
             "defrost": {
                 "name": "D\u00edreoite"
@@ -71,6 +77,12 @@
             }
         },
         "button": {
+            "factory_reset": {
+                "name": "Athshocr\u00fa monarchan"
+            },
+            "manual_clean": {
+                "name": "Glanadh de l\u00e1imh"
+            },
             "reset_duster_cloth": {
                 "name": "Athshocraigh \u00e9adach deannaigh"
             },
@@ -105,6 +117,12 @@
             }
         },
         "event": {
+            "doorbell_message": {
+                "name": "Teachtaireacht cloig\u00edn dorais"
+            },
+            "doorbell_picture": {
+                "name": "Picti\u00far clog dorais"
+            },
             "numbered_button": {
                 "name": "Cnaipe {button_number}",
                 "state_attributes": {
@@ -153,6 +171,9 @@
             },
             "cloud_recipe": {
                 "name": "Oideas scamall"
+            },
+            "delay_clean_time": {
+                "name": "Moill ar an am glantach\u00e1in"
             },
             "down_delay": {
                 "name": "Moill s\u00edos"
@@ -458,14 +479,20 @@
                 }
             },
             "relay_status": {
-                "name": "Iompar cumhachta ar",
                 "state": {
-                    "last": "Cuimhnigh an st\u00e1t deireanach",
-                    "memory": "Cuimhnigh an st\u00e1t deireanach",
                     "off": "As",
                     "on": "Ar si\u00fal",
                     "power_off": "As",
                     "power_on": "Ar si\u00fal"
+                }
+            },
+            "siren_mode": {
+                "name": "M\u00f3d sir\u00e9in",
+                "state": {
+                    "alarm_light": "Solas",
+                    "alarm_sound": "Fuaim",
+                    "alarm_sound_light": "Fuaim & solas",
+                    "normal": "Gn\u00e1th"
                 }
             },
             "target_humidity": {
@@ -582,6 +609,17 @@
             "carbon_monoxide": {
                 "name": "Aonocsa\u00edd charb\u00f3in"
             },
+            "cat_litter_box_status": {
+                "name": "St\u00e1das",
+                "state": {
+                    "clean": "Glanadh",
+                    "empty": "Ag folmh\u00fa",
+                    "level": "Leibh\u00e9al\u00fa",
+                    "sleep": "Codladh",
+                    "standby": "Fuireachas",
+                    "uv": "Sl\u00e1int\u00edocht"
+                }
+            },
             "cat_weight": {
                 "name": "Me\u00e1chan cait"
             },
@@ -608,6 +646,9 @@
             },
             "duster_cloth_life": {
                 "name": "Saolr\u00e9 \u00e9adach duster"
+            },
+            "excretion_times_day": {
+                "name": "Amanna eisfhearadh (i rith an lae)"
             },
             "feels_like_temperature": {
                 "name": "Motha\u00edonn s\u00e9 cos\u00fail"
@@ -862,6 +903,9 @@
             },
             "arm_beep": {
                 "name": "Arm\u00e1il b\u00edp"
+            },
+            "auto_clean": {
+                "name": "Glanadh uathoibr\u00edoch"
             },
             "battery_lock": {
                 "name": "Glas ceallra\u00ed"

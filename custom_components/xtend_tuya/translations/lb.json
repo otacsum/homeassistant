@@ -3,5 +3,14 @@
         "error": {
             "invalid_auth": "Ong\u00eblteg Authentifikatioun"
         }
+    },
+    "entity": {
+        "select": {
+            "siren_mode": {
+                "state": {
+                    "normal": "Normal"
+                }
+            }
+        }
     }
 }

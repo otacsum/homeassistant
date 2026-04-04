@@ -36,6 +36,9 @@
             "carbon_monoxide": {
                 "name": "Oxid uho\u013enat\u00fd"
             },
+            "cover_off": {
+                "name": "Kryt je pre\u010d"
+            },
             "defrost": {
                 "name": "Odmrazovanie"
             },
@@ -74,6 +77,12 @@
             }
         },
         "button": {
+            "factory_reset": {
+                "name": "Obnovenie tov\u00e1rensk\u00e9ho nastavenia"
+            },
+            "manual_clean": {
+                "name": "Manu\u00e1lne \u010distenie"
+            },
             "reset_duster_cloth": {
                 "name": "Resetujte handri\u010dku na prach"
             },
@@ -108,6 +117,12 @@
             }
         },
         "event": {
+            "doorbell_message": {
+                "name": "Spr\u00e1va zvon\u010deka"
+            },
+            "doorbell_picture": {
+                "name": "Obr\u00e1zok zvon\u010deka"
+            },
             "numbered_button": {
                 "name": "Tla\u010didlo {button_number}",
                 "state_attributes": {
@@ -162,6 +177,9 @@
             },
             "cook_time": {
                 "name": "\u010cas varenia"
+            },
+            "delay_clean_time": {
+                "name": "Oneskorenie \u010distenia"
             },
             "down_delay": {
                 "name": "Oneskorenie smerom nadol"
@@ -472,14 +490,23 @@
                 }
             },
             "relay_status": {
-                "name": "Zapnite spr\u00e1vanie",
+                "name": "Spr\u00e1vanie pri zapnut\u00ed",
                 "state": {
-                    "last": "Zapam\u00e4ta\u0165 posledn\u00fd stav",
-                    "memory": "Zapam\u00e4ta\u0165 posledn\u00fd stav",
+                    "last": "Predch\u00e1dzaj\u00faci stav",
+                    "memory": "Predch\u00e1dzaj\u00faci stav",
                     "off": "Neakt\u00edvny",
                     "on": "Akt\u00edvny",
                     "power_off": "Neakt\u00edvny",
                     "power_on": "Akt\u00edvny"
+                }
+            },
+            "siren_mode": {
+                "name": "Re\u017eim sir\u00e9ny",
+                "state": {
+                    "alarm_light": "Svetlo",
+                    "alarm_sound": "Zvuk",
+                    "alarm_sound_light": "Zvuk a svetlo",
+                    "normal": "Norm\u00e1lne"
                 }
             },
             "target_humidity": {
@@ -596,6 +623,17 @@
             "carbon_monoxide": {
                 "name": "Oxid uho\u013enat\u00fd"
             },
+            "cat_litter_box_status": {
+                "name": "Stav",
+                "state": {
+                    "clean": "Upratovanie",
+                    "empty": "Vypr\u00e1zd\u0148ovanie",
+                    "level": "Vyrovn\u00e1vanie",
+                    "sleep": "Spanie",
+                    "standby": "Pohotovostn\u00fd re\u017eim",
+                    "uv": "Dezinfekcia"
+                }
+            },
             "cat_weight": {
                 "name": "Hmotnos\u0165 ma\u010dky"
             },
@@ -624,7 +662,7 @@
                 "name": "\u017divotnos\u0165 utierky na prach"
             },
             "excretion_time_day": {
-                "name": "\u010cas vylu\u010dovania (de\u0148)"
+                "name": "Trvanie vylu\u010dovania"
             },
             "excretion_times_day": {
                 "name": "\u010casy vylu\u010dovania (de\u0148)"
@@ -684,7 +722,7 @@
                 "name": "V\u00fdstupn\u00e1 energia meni\u010da po\u010das \u017eivotnosti"
             },
             "lifetime_offgrid_port_energy": {
-                "name": "Do\u017eivotn\u00e1 energia z portu mimo siete"
+                "name": "Energia z portu mimo siete za dobu \u017eivotnosti"
             },
             "lifetime_pv_energy": {
                 "name": "Celo\u017eivotn\u00e1 fotovoltick\u00e1 energia"
@@ -882,6 +920,9 @@
             },
             "arm_beep": {
                 "name": "P\u00edpnutie ovl\u00e1dania"
+            },
+            "auto_clean": {
+                "name": "Automatick\u00e9 \u010distenie"
             },
             "battery_lock": {
                 "name": "Z\u00e1mok bat\u00e9rie"

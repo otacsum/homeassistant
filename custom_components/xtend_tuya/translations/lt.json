@@ -27,11 +27,17 @@
     },
     "entity": {
         "binary_sensor": {
+            "bag_full": {
+                "name": "Pilnas krep\u0161ys"
+            },
             "carbon_dioxide": {
                 "name": "Anglies dioksidas"
             },
             "carbon_monoxide": {
                 "name": "Anglies monoksidas"
+            },
+            "cover_off": {
+                "name": "U\u017edenkite"
             },
             "defrost": {
                 "name": "Atitirpinimas"
@@ -71,6 +77,12 @@
             }
         },
         "button": {
+            "factory_reset": {
+                "name": "Gamyklini\u0173 parametr\u0173 atk\u016brimas"
+            },
+            "manual_clean": {
+                "name": "Rankinis valymas"
+            },
             "reset_duster_cloth": {
                 "name": "I\u0161 naujo nustatykite dulki\u0173 \u0161luost\u0119"
             },
@@ -105,6 +117,12 @@
             }
         },
         "event": {
+            "doorbell_message": {
+                "name": "Dur\u0173 skambu\u010dio prane\u0161imas"
+            },
+            "doorbell_picture": {
+                "name": "Dur\u0173 skambu\u010dio nuotrauka"
+            },
             "numbered_button": {
                 "name": "Mygtukas {button_number}",
                 "state_attributes": {
@@ -159,6 +177,9 @@
             },
             "cook_time": {
                 "name": "Virimo laikas"
+            },
+            "delay_clean_time": {
+                "name": "Atid\u0117kite valymo laik\u0105"
             },
             "down_delay": {
                 "name": "V\u0117lavimas \u017eemyn"
@@ -469,14 +490,23 @@
                 }
             },
             "relay_status": {
-                "name": "\u012ejunkite elges\u012f",
+                "name": "\u012ejungimo elgsena",
                 "state": {
-                    "last": "Prisiminkite paskutin\u0119 b\u016bsen\u0105",
-                    "memory": "Prisiminkite paskutin\u0119 b\u016bsen\u0105",
+                    "last": "Ankstesn\u0117 b\u016bsena",
+                    "memory": "Ankstesn\u0117 b\u016bsena",
                     "off": "I\u0161jungta",
                     "on": "\u012ejungta",
                     "power_off": "I\u0161jungta",
                     "power_on": "\u012ejungta"
+                }
+            },
+            "siren_mode": {
+                "name": "Sirenos re\u017eimas",
+                "state": {
+                    "alarm_light": "\u0160viesa",
+                    "alarm_sound": "Garsas",
+                    "alarm_sound_light": "Garsas & \u0161viesa",
+                    "normal": "Normalus"
                 }
             },
             "target_humidity": {
@@ -593,6 +623,17 @@
             "carbon_monoxide": {
                 "name": "Anglies monoksidas"
             },
+            "cat_litter_box_status": {
+                "name": "B\u016bsena",
+                "state": {
+                    "clean": "Valymas",
+                    "empty": "I\u0161tu\u0161tinimas",
+                    "level": "Lygiavimas",
+                    "sleep": "Miegojimas",
+                    "standby": "Bud\u0117jimo re\u017eimas",
+                    "uv": "Dezinfekavimas"
+                }
+            },
             "cat_weight": {
                 "name": "Kat\u0117s svoris"
             },
@@ -619,6 +660,12 @@
             },
             "duster_cloth_life": {
                 "name": "\u0160luost\u0117s eksploatavimo laikas"
+            },
+            "excretion_time_day": {
+                "name": "I\u0161skyrimo trukm\u0117"
+            },
+            "excretion_times_day": {
+                "name": "I\u0161siskyrimo laikas (diena)"
             },
             "feels_like_temperature": {
                 "name": "Jau\u010diasi kaip"
@@ -873,6 +920,9 @@
             },
             "arm_beep": {
                 "name": "Rankos pyptel\u0117jimas"
+            },
+            "auto_clean": {
+                "name": "Automatinis valymas"
             },
             "battery_lock": {
                 "name": "Akumuliatoriaus u\u017eraktas"

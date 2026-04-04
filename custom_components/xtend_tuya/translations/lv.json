@@ -56,12 +56,6 @@
                     "1": "Ierakst\u012bt tikai notikumus",
                     "2": "Nep\u0101rtraukta ierakst\u012b\u0161ana"
                 }
-            },
-            "relay_status": {
-                "state": {
-                    "last": "Atcer\u0113ties p\u0113d\u0113jo st\u0101vokli",
-                    "memory": "Atcer\u0113ties p\u0113d\u0113jo st\u0101vokli"
-                }
             }
         },
         "sensor": {

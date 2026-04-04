@@ -157,13 +157,14 @@
             },
             "relay_status": {
                 "state": {
-                    "last": "zapami\u0119taj ostatni stan",
-                    "memory": "zapami\u0119taj ostatni stan",
                     "off": "wy\u0142\u0105czono",
                     "on": "w\u0142\u0105czono",
                     "power_off": "wy\u0142\u0105czono",
                     "power_on": "w\u0142\u0105czono"
                 }
+            },
+            "target_humidity": {
+                "name": "Wilgotno\u015b\u0107 docelowa"
             },
             "vacuum_cistern": {
                 "state": {
@@ -223,6 +224,11 @@
             },
             "carbon_monoxide": {
                 "name": "Tlenek w\u0119gla"
+            },
+            "cat_litter_box_status": {
+                "state": {
+                    "clean": "czyszczenie"
+                }
             },
             "current": {
                 "name": "Nat\u0119\u017cenie pr\u0105du"

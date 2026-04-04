@@ -19,7 +19,8 @@
             "user": {
                 "data": {
                     "user_code": "Anv\u00e4ndarkod"
-                }
+                },
+                "description": "Ange din Smart Life- eller Tuya Smart-anv\u00e4ndarkod.\n\nDu hittar den h\u00e4r koden i Smart Life-appen eller Tuya Smart-appen under **Inst\u00e4llningar** > **Konto och s\u00e4kerhet** och anger koden som visas i f\u00e4ltet **Anv\u00e4ndarkod**. Anv\u00e4ndarkoden \u00e4r skiftl\u00e4gesk\u00e4nslig, s\u00e5 var noga med att ange den exakt som den visas i appen."
             }
         }
     },
@@ -63,6 +64,12 @@
             }
         },
         "button": {
+            "factory_reset": {
+                "name": "Fabriks\u00e5terst\u00e4llning"
+            },
+            "manual_clean": {
+                "name": "Manuell reng\u00f6ring"
+            },
             "reset_duster_cloth": {
                 "name": "\u00c5terst\u00e4ll dammduk"
             },
@@ -137,6 +144,9 @@
             "cloud_recipe": {
                 "name": "Moln recept"
             },
+            "delay_clean_time": {
+                "name": "F\u00f6rdr\u00f6j reng\u00f6ringstiden"
+            },
             "down_delay": {
                 "name": "F\u00f6rdr\u00f6jning av nedg\u00e5ng"
             },
@@ -178,6 +188,9 @@
             },
             "sensitivity": {
                 "name": "K\u00e4nslighet"
+            },
+            "target_dis_closest": {
+                "name": "N\u00e4rmaste avst\u00e5nd till m\u00e5l"
             },
             "temp_correction": {
                 "name": "Temperaturkorrigering"
@@ -221,6 +234,8 @@
             "blanket_level": {
                 "name": "Niv\u00e5",
                 "state": {
+                    "level_1": "L\u00e5g",
+                    "level_10": "H\u00f6g",
                     "level_2": "Niv\u00e5 2",
                     "level_3": "Niv\u00e5 3",
                     "level_4": "Niv\u00e5 4",
@@ -421,14 +436,20 @@
                 }
             },
             "relay_status": {
-                "name": "Uppstartsbeteende",
                 "state": {
-                    "last": "Kom ih\u00e5g senaste tillst\u00e5ndet",
-                    "memory": "Kom ih\u00e5g senaste tillst\u00e5ndet",
                     "off": "Av",
                     "on": "P\u00e5",
                     "power_off": "Av",
                     "power_on": "P\u00e5"
+                }
+            },
+            "siren_mode": {
+                "name": "Sirenl\u00e4ge",
+                "state": {
+                    "alarm_light": "Ljus",
+                    "alarm_sound": "Ljud",
+                    "alarm_sound_light": "Ljud och ljus",
+                    "normal": "Normal"
                 }
             },
             "target_humidity": {
@@ -545,6 +566,14 @@
             "carbon_monoxide": {
                 "name": "Kolmonoxid"
             },
+            "cat_litter_box_status": {
+                "name": "Status",
+                "state": {
+                    "clean": "St\u00e4dar",
+                    "empty": "T\u00f6mmer",
+                    "standby": "Vilol\u00e4ge"
+                }
+            },
             "cat_weight": {
                 "name": "Kattens vikt"
             },
@@ -622,6 +651,9 @@
             },
             "lifetime_pv_energy": {
                 "name": "Livsl\u00e4ngd PV energi"
+            },
+            "liquid_depth": {
+                "name": "V\u00e4tskedjup"
             },
             "liquid_state": {
                 "state": {
@@ -803,6 +835,9 @@
         "switch": {
             "anion": {
                 "name": "Anion"
+            },
+            "auto_clean": {
+                "name": "Automatisk reng\u00f6ring"
             },
             "battery_lock": {
                 "name": "Batteril\u00e5s"

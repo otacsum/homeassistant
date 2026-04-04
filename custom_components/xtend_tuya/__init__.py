@@ -15,6 +15,8 @@ from .const import (
     DOMAIN_ORIG,
     PLATFORMS,
     LOGGER,
+    XTDeviceWatcherSpecialDevice,
+    XTDeviceWatcherCategory,
 )
 from .multi_manager.multi_manager import (
     MultiManager,
@@ -37,6 +39,35 @@ from .entity import (
 from .multi_manager.shared.tuya_patches.tuya_patches import (
     XTTuyaPatcher,
 )
+import socket
+
+# save the original DNS lookup function
+_original_getaddrinfo = socket.getaddrinfo
+
+
+def _getaddrinfo_ipv4_only(host, port, family=0, type=0, proto=0, flags=0):
+    """
+    IPv6 sniper: If the request is going to a tuya server,
+    force it to use IPv4 (AF_INET) to prevent IPv6 timeout
+    """
+    tuya_hosts = [
+        "apigw.iotbing.com",
+        "openapi.tuyaus.com",
+        "openapi.tuyacn.com",
+        "openapi.tuyaeu.com",
+        "openapi.tuyain.com",
+        "openapi-sg.iotbing.com",
+        "openapi-ueaz.tuyaus.com",
+        "openapi-weaz.tuyaeu.com",
+    ]
+    if host and host in tuya_hosts:
+        return _original_getaddrinfo(host, port, socket.AF_INET, type, proto, flags)
+    return _original_getaddrinfo(host, port, family, type, proto, flags)
+
+
+# Replace the global function with the sniper
+socket.getaddrinfo = _getaddrinfo_ipv4_only
+
 
 # Suppress logs from the library, it logs unneeded on error
 logging.getLogger("tuya_sharing").setLevel(logging.CRITICAL)
@@ -62,15 +93,23 @@ async def async_setup_entry(hass: HomeAssistant, entry: XTConfigEntry) -> bool:
     service_manager = ServiceManager(multi_manager=multi_manager)
     last_time = datetime.now()
     await multi_manager.setup_entry()
-    LOGGER.debug(
-        f"Xtended Tuya {entry.title} {datetime.now() - last_time} for setup_entry"
+    multi_manager.device_watcher.report_message(
+        XTDeviceWatcherSpecialDevice.NOT_LINKED_TO_A_DEVICE,
+        f"Xtended Tuya {entry.title} {datetime.now() - last_time} for setup_entry",
+        XTDeviceWatcherCategory.XT_PERFORMANCE,
+        None,
+        False,
     )
 
     # Get all devices from Tuya
     last_time = datetime.now()
     await multi_manager.update_device_cache()
-    LOGGER.debug(
-        f"Xtended Tuya {entry.title} {datetime.now() - last_time} for update_device_cache"
+    multi_manager.device_watcher.report_message(
+        XTDeviceWatcherSpecialDevice.NOT_LINKED_TO_A_DEVICE,
+        f"Xtended Tuya {entry.title} {datetime.now() - last_time} for update_device_cache",
+        XTDeviceWatcherCategory.XT_PERFORMANCE,
+        None,
+        False,
     )
 
     # Connection is successful, store the manager & listener
@@ -85,8 +124,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: XTConfigEntry) -> bool:
     XTEventLoopProtector.execute_out_of_event_loop(
         cleanup_device_registry, hass, multi_manager, entry
     )
-    LOGGER.debug(
-        f"Xtended Tuya {entry.title} {datetime.now() - last_time} for cleanup_device_registry"
+    multi_manager.device_watcher.report_message(
+        XTDeviceWatcherSpecialDevice.NOT_LINKED_TO_A_DEVICE,
+        f"Xtended Tuya {entry.title} {datetime.now() - last_time} for cleanup_device_registry",
+        XTDeviceWatcherCategory.XT_PERFORMANCE,
+        None,
+        False,
     )
 
     # Register known device IDs
@@ -97,8 +140,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: XTConfigEntry) -> bool:
         XTEntity.mark_overriden_entities_as_disabled(hass, device)
         XTEntity.register_current_entities_as_handled_dpcode(hass, device)
         multi_manager.virtual_state_handler.apply_init_virtual_states(device)
-    LOGGER.debug(
-        f"Xtended Tuya {entry.title} {datetime.now() - last_time} for device id registration"
+    multi_manager.device_watcher.report_message(
+        XTDeviceWatcherSpecialDevice.NOT_LINKED_TO_A_DEVICE,
+        f"Xtended Tuya {entry.title} {datetime.now() - last_time} for device id registration",
+        XTDeviceWatcherCategory.XT_PERFORMANCE,
+        None,
+        False,
     )
 
     last_time = datetime.now()
@@ -128,20 +175,32 @@ async def async_setup_entry(hass: HomeAssistant, entry: XTConfigEntry) -> bool:
                 device_entry.id,
                 disabled_by=None,
             )
-    LOGGER.debug(
-        f"Xtended Tuya {entry.title} {datetime.now() - last_time} for create device"
+    multi_manager.device_watcher.report_message(
+        XTDeviceWatcherSpecialDevice.NOT_LINKED_TO_A_DEVICE,
+        f"Xtended Tuya {entry.title} {datetime.now() - last_time} for create device",
+        XTDeviceWatcherCategory.XT_PERFORMANCE,
+        None,
+        False,
     )
 
     last_time = datetime.now()
     await multi_manager.setup_entity_parsers()
-    LOGGER.debug(
-        f"Xtended Tuya {entry.title} {datetime.now() - last_time} for setup_entity_parsers"
+    multi_manager.device_watcher.report_message(
+        XTDeviceWatcherSpecialDevice.NOT_LINKED_TO_A_DEVICE,
+        f"Xtended Tuya {entry.title} {datetime.now() - last_time} for setup_entity_parsers",
+        XTDeviceWatcherCategory.XT_PERFORMANCE,
+        None,
+        False,
     )
 
     last_time = datetime.now()
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-    LOGGER.debug(
-        f"Xtended Tuya {entry.title} {datetime.now() - last_time} for async_forward_entry_setups"
+    multi_manager.device_watcher.report_message(
+        XTDeviceWatcherSpecialDevice.NOT_LINKED_TO_A_DEVICE,
+        f"Xtended Tuya {entry.title} {datetime.now() - last_time} for async_forward_entry_setups",
+        XTDeviceWatcherCategory.XT_PERFORMANCE,
+        None,
+        False,
     )
 
     # If the device does not register any entities, the device does not need to subscribe
@@ -150,30 +209,52 @@ async def async_setup_entry(hass: HomeAssistant, entry: XTConfigEntry) -> bool:
     await XTEventLoopProtector.execute_out_of_event_loop_and_return(
         multi_manager.refresh_mq
     )
-    LOGGER.debug(
-        f"Xtended Tuya {entry.title} {datetime.now() - last_time} for refresh_mq"
+    multi_manager.device_watcher.report_message(
+        XTDeviceWatcherSpecialDevice.NOT_LINKED_TO_A_DEVICE,
+        f"Xtended Tuya {entry.title} {datetime.now() - last_time} for refresh_mq",
+        XTDeviceWatcherCategory.XT_PERFORMANCE,
+        None,
+        False,
     )
 
     last_time = datetime.now()
     service_manager.register_services()
-    LOGGER.debug(
-        f"Xtended Tuya {entry.title} {datetime.now() - last_time} for register_services"
+    multi_manager.device_watcher.report_message(
+        XTDeviceWatcherSpecialDevice.NOT_LINKED_TO_A_DEVICE,
+        f"Xtended Tuya {entry.title} {datetime.now() - last_time} for register_services",
+        XTDeviceWatcherCategory.XT_PERFORMANCE,
+        None,
+        False,
     )
 
     last_time = datetime.now()
     XTEventLoopProtector.execute_out_of_event_loop(
         cleanup_duplicated_devices, hass, entry
     )
-    LOGGER.debug(
-        f"Xtended Tuya {entry.title} {datetime.now() - last_time} for cleanup_duplicated_devices"
+    multi_manager.device_watcher.report_message(
+        XTDeviceWatcherSpecialDevice.NOT_LINKED_TO_A_DEVICE,
+        f"Xtended Tuya {entry.title} {datetime.now() - last_time} for cleanup_duplicated_devices",
+        XTDeviceWatcherCategory.XT_PERFORMANCE,
+        None,
+        False,
     )
 
     last_time = datetime.now()
     await multi_manager.on_loading_finalized(hass, entry)
-    LOGGER.debug(
-        f"Xtended Tuya {entry.title} {datetime.now() - last_time} for on_loading_finalized"
+    multi_manager.device_watcher.report_message(
+        XTDeviceWatcherSpecialDevice.NOT_LINKED_TO_A_DEVICE,
+        f"Xtended Tuya {entry.title} {datetime.now() - last_time} for on_loading_finalized",
+        XTDeviceWatcherCategory.XT_PERFORMANCE,
+        None,
+        False,
     )
-    LOGGER.debug(f"Xtended Tuya {entry.title} loaded in {datetime.now() - start_time}")
+    multi_manager.device_watcher.report_message(
+        XTDeviceWatcherSpecialDevice.NOT_LINKED_TO_A_DEVICE,
+        f"Xtended Tuya {entry.title} loaded in {datetime.now() - start_time}",
+        XTDeviceWatcherCategory.XT_PERFORMANCE,
+        None,
+        False,
+    )
     return True
 
 

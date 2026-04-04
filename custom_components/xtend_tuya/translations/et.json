@@ -27,11 +27,17 @@
     },
     "entity": {
         "binary_sensor": {
+            "bag_full": {
+                "name": "Kott on t\u00e4is"
+            },
             "carbon_dioxide": {
                 "name": "S\u00fcsihappegaas"
             },
             "carbon_monoxide": {
                 "name": "Vingugaas"
+            },
+            "cover_off": {
+                "name": "Kate eest"
             },
             "defrost": {
                 "name": "Sulatamine"
@@ -71,6 +77,12 @@
             }
         },
         "button": {
+            "factory_reset": {
+                "name": "Tehaseseadete taastamine"
+            },
+            "manual_clean": {
+                "name": "K\u00e4sitsi puhastamine"
+            },
             "reset_duster_cloth": {
                 "name": "L\u00e4htesta tolmulapp"
             },
@@ -105,6 +117,12 @@
             }
         },
         "event": {
+            "doorbell_message": {
+                "name": "Uksekella s\u00f5num"
+            },
+            "doorbell_picture": {
+                "name": "Uksekella pilt"
+            },
             "numbered_button": {
                 "name": "Nupp {button_number}",
                 "state_attributes": {
@@ -159,6 +177,9 @@
             },
             "cook_time": {
                 "name": "K\u00fcpsetusaeg"
+            },
+            "delay_clean_time": {
+                "name": "Puhastusaja edasil\u00fckkamine"
             },
             "down_delay": {
                 "name": "Allapoole viivitus"
@@ -471,12 +492,21 @@
             "relay_status": {
                 "name": "K\u00e4itumine sissel\u00fclitamisel",
                 "state": {
-                    "last": "J\u00e4ta viimane olek meelde",
-                    "memory": "J\u00e4ta viimane olek meelde",
+                    "last": "Eelmine olek",
+                    "memory": "Eelmine olek",
                     "off": "V\u00e4ljas",
                     "on": "Sees",
                     "power_off": "V\u00e4ljas",
                     "power_on": "Sees"
+                }
+            },
+            "siren_mode": {
+                "name": "Sireeni re\u017eiim",
+                "state": {
+                    "alarm_light": "Valgus",
+                    "alarm_sound": "Heli",
+                    "alarm_sound_light": "Heli ja valgus",
+                    "normal": "Tavaline"
                 }
             },
             "target_humidity": {
@@ -593,6 +623,17 @@
             "carbon_monoxide": {
                 "name": "Vingugaas"
             },
+            "cat_litter_box_status": {
+                "name": "Olek",
+                "state": {
+                    "clean": "Puhastamine",
+                    "empty": "T\u00fchjendamine",
+                    "level": "Tasandamine",
+                    "sleep": "Ootel",
+                    "standby": "Unere\u017eiimil",
+                    "uv": "Desinfitseerimine"
+                }
+            },
             "cat_weight": {
                 "name": "Kassi kaal"
             },
@@ -619,6 +660,12 @@
             },
             "duster_cloth_life": {
                 "name": "Tolmulapi kasutusiga"
+            },
+            "excretion_time_day": {
+                "name": "Eritumise kestus"
+            },
+            "excretion_times_day": {
+                "name": "Eritumise ajad (p\u00e4ev)"
             },
             "feels_like_temperature": {
                 "name": "Tundub nagu"
@@ -873,6 +920,9 @@
             },
             "arm_beep": {
                 "name": "Valvestamise heli"
+            },
+            "auto_clean": {
+                "name": "Automaatne puhastamine"
             },
             "battery_lock": {
                 "name": "Aku lukustus"
