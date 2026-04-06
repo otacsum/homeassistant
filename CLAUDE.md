@@ -19,6 +19,15 @@
 | Template entities, helpers (`input_*`), HomeKit filter | Full restart: `ssh homeassistant "ha core restart"` |
 | Lovelace dashboards | Browser refresh only |
 
+### Reloading scripts via REST API
+
+`ha core reload-scripts` is not a valid CLI command. Use the REST API instead:
+
+```bash
+curl -s -X POST "http://192.168.0.10:8123/api/services/script/reload" \
+  -H "Authorization: $TOKEN" -H "Content-Type: application/json"
+```
+
 ### Workflow
 
 1. Edit files directly on the host via SSH heredoc or `cat >` redirect
@@ -40,7 +49,10 @@ When a script action updates a value via a template entity (e.g., a template lig
 **Fix:** Use plain `delay` for timing in scripts instead of `wait_for_trigger` when the trigger entity is a template wrapper over a hardware device.
 
 ### Template light `turn_on` does not set brightness
-A template light's `turn_on` action only executes what is defined under `turn_on:` — typically just switching the underlying switch on. HA then calls `set_level` separately as a second step. If you need the device to come on at a specific brightness with no visible jump, pre-set the underlying hardware value *before* calling `turn_on`.
+A template light's `turn_on` action only executes what is defined under `turn_on:` — typically just switching the underlying switch on. HA then calls `set_level` separately as a second step.
+
+### Template light `set_level` is single-mode
+HA creates an internal script for each template light's `set_level` action. This script runs in `single` mode — if it is still executing from a previous call when a new `light.turn_on` arrives, the new `set_level` is silently dropped with a `WARNING: Already running` log entry. Avoid rapid successive `light.turn_on` calls on template lights.
 
 ---
 
@@ -65,9 +77,54 @@ When a script continuously updates an entity (e.g., incrementing brightness), a 
 
 ## Tuya Integration
 
+### Scale and float requirement
+
 - Brightness is on a **0–1000 scale** (not 0–255)
-- Use **float values** when setting `number.set_value` for Tuya entities. Integer values near hardware minimums may be bumped up by the integration to enforce device minimums
-- State updates from Tuya devices are asynchronous — there is a delay between calling a service and the entity state reflecting the change
+- Always use **genuine non-integer float values** when calling `number.set_value` near hardware minimums. Integer-like floats (e.g. `10.0`, `12.0`, `20.0`) are treated as boundary sentinels by the integration and may be bumped up to the next valid step. True non-integer floats (e.g. `11.76`) pass through to the device correctly.
+- State updates from Tuya devices are asynchronous — there is a delay between calling a service and the entity state reflecting the change.
+
+### Brightness conversion: HA → Tuya
+
+The template light path converts `brightness_pct` via a 0–255 intermediate:
+
+```
+brightness_pct → round(pct/100 * 255) → (brightness/255) * 1000 → raw Tuya value
+```
+
+This produces non-integer floats that the device accepts:
+
+| `brightness_pct` | HA brightness (0–255) | Raw Tuya sent | Device reports |
+|---|---|---|---|
+| 1% | 3 | 11.76 | 12.0 |
+| 2% | 5 | 19.61 | 20.0 |
+| 10% | 26 | 102.0 | 102.0 |
+
+At low brightness percentages the rounding is significant (1% and 2% are 8 raw units apart). For precise low-brightness control in scripts, bypass the template light and set `number.bedroom_dimmer_fan_bright_value` directly with exact raw values.
+
+### Tuya commands sent while switch is off
+
+Any `number.set_value` command sent to a Tuya entity **while its switch is off** queues a delayed state report. This report typically arrives 3–5 seconds after the switch next turns on and will overwrite any brightness command sent in the same window. This means:
+
+- Pre-setting brightness while the switch is off **does not reliably control the startup brightness** directly.
+- Sending a command while off followed by `switch.turn_on` + a short delay + a post-set will usually have the post-set overwritten by the delayed report from the pre-set.
+
+### Preventing bright flash on startup (bedroom dimmer pattern)
+
+The Tuya dimmer restores its last stored brightness on power-on. If the light was last used at a high value (e.g. 500 = 50%), it will flash at that brightness when next switched on.
+
+**Effective pattern:** Send a sub-minimum non-integer float (e.g. `11.76`) to the number entity while the switch is off. The device stores this value; because it is below the firmware minimum, the device clamps to its minimum (raw 20 = 2%) on the next power-on rather than restoring the high stored value. No post-set is needed — the clamped startup state is the intended behaviour.
+
+```yaml
+- service: number.set_value          # pre-set while switch is off
+  data: { value: 11.76 }             # sub-minimum non-integer float
+- service: switch.turn_on            # device starts at raw 20 (2%), not stored value
+```
+
+Do **not** follow this with a `delay` + post-set to try to reach a lower value — the delayed state report from the pre-set will overwrite the post-set. Accept raw 20 as the startup brightness and begin the ramp from there.
+
+### Firmware startup minimum
+
+The bedroom dimmer's firmware minimum is **raw 20** (2%). The entity reports `min: 10` but values at or below ~11 are clamped to 20 by device firmware on power-on.
 
 ---
 
