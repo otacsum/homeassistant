@@ -1,0 +1,74 @@
+order:
+  - item: canon madera
+    order: 1
+  - new_item: true
+    item: Devices
+    href: "/config/devices/dashboard"
+    icon: mdi:devices
+    order: 2
+  - new_item: true
+    item: Entities
+    href: "/config/entities"
+    icon: mdi:hexagon-multiple
+    order: 3
+  - new_item: true
+    item: Automations
+    href: "/config/automation"
+    icon: mdi:robot
+    order: 4
+  - item: overview
+    order: 5
+  - item: config
+    order: 6
+  - new_item: true
+    item: Integrations
+    href: "/config/integrations"
+    icon: mdi:puzzle
+    order: 7
+  - item: hacs
+    order: 8
+    notification: |
+      [[[
+        const outdatedHacsEntities = Object.values(entities.update).filter(
+          (entity) => entity.platform === 'hacs' && is_state(entity.entity_id, 'on')
+        );
+        return outdatedHacsEntities.length || '';
+      ]]]
+  - item: to-do list
+    hide: true
+  - item: activity
+    bottom: true
+    order: 1
+  - new_item: true
+    item: Logs
+    bottom: true
+    href: "/config/logs"
+    icon: mdi:math-log
+    order: 2
+  - new_item: true
+    item: developer tools
+    name: Dev tools
+    icon: mdi:tools
+    href: "/config/developer-tools"
+    bottom: true
+    order: 3
+  - new_item: true
+    item: Restart
+    icon: mdi:power
+    bottom: true
+    order: 4
+    on_click:
+      action: open-dialog
+      type: restart
+  - item: history
+    hide: true
+  - item: snapshots
+    hide: true
+  - item: backups
+    hide: true
+  - item: map
+    hide: true
+  - item: energy
+    hide: true
+  - item: media
+    hide: true

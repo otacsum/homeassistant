@@ -142,3 +142,76 @@ The bedroom dimmer's firmware minimum is **raw 20** (2%). The entity reports `mi
 
 - Place automation/feature documentation in `docs/` as Markdown files
 - Name files descriptively (e.g., `docs/Feature-Name.md`)
+
+---
+
+## custom-sidebar Plugin
+
+**HACS install location:** `www/community/custom-sidebar/`
+**Config file:** `/root/homeassistant/www/custom-sidebar-config.yaml`
+**Version installed:** v13.1.0 (compatible with HA 2026.3.0+)
+
+### Version Compatibility
+
+| Home Assistant version | Minimum custom-sidebar version |
+|---|---|
+| < 2025.5.0 | any (up to v9.4.1) |
+| 2025.5.0 – 2026.1.3 | v10.0.0 – v11.2.0 |
+| 2026.1.3 – 2026.2.3 | v12.x |
+| 2026.3.0+ | v13.0.0+ |
+
+### Critical Installation Rules
+
+1. **`extra_module_url` must use `/hacsfiles/` path** — not `/local/community/...`:
+   ```yaml
+   frontend:
+     extra_module_url:
+       - /hacsfiles/custom-sidebar/custom-sidebar-plugin.js
+   ```
+   HACS serves files via a custom `/hacsfiles/` request handler. Using the `/local/community/` path will silently fail even though the file is physically there.
+
+2. **Reference `custom-sidebar-plugin.js`**, not `custom-sidebar.js`.
+
+3. **Delete the `id` field** from the config if copied from the example file — leaving it causes the plugin to fail silently.
+
+4. **Config changes do not require an HA restart** — hard-refresh the browser (`Cmd+Shift+R`) to apply.
+
+5. **Full HA restart is required** after changing `extra_module_url` in `configuration.yaml`.
+
+### Item Names
+
+The `item` property matches the sidebar item's **lowercase text label** as it appears in the UI:
+- `canon madera` — the Canon Madera dashboard
+- `to-do list` — the To-do lists built-in item
+- `overview` — the default Home dashboard
+- `config` — the Settings item
+- `hacs` — the HACS item
+
+Use `new_item: true` for items that don't already exist in the sidebar.
+
+### Useful on_click Actions
+
+```yaml
+# Open the native HA restart dialog (same as the power button in Settings)
+on_click:
+  action: open-dialog
+  type: restart
+
+# Call a service on click
+on_click:
+  action: call-service
+  service: script.my_script
+
+# Execute arbitrary JavaScript
+on_click:
+  action: javascript
+  code: alert('hello')
+```
+
+Omit `href` (or set `href: "#"`) to prevent navigation when using `on_click`.
+
+### Troubleshooting
+
+- Open browser DevTools → Console and look for the `custom-sidebar` info log to confirm the plugin loaded.
+- Add `?cs_debug` to the HA URL for verbose debug output showing all detected item names and config parsing.
+- If customisations are not applied, verify the `extra_module_url` path and that the config file is in `www/` (not a subdirectory).
