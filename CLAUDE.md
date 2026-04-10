@@ -215,3 +215,88 @@ Omit `href` (or set `href: "#"`) to prevent navigation when using `on_click`.
 - Open browser DevTools → Console and look for the `custom-sidebar` info log to confirm the plugin loaded.
 - Add `?cs_debug` to the HA URL for verbose debug output showing all detected item names and config parsing.
 - If customisations are not applied, verify the `extra_module_url` path and that the config file is in `www/` (not a subdirectory).
+
+---
+
+## Home Assistant Recorder / Database
+
+### Entity ID lookup requires a JOIN
+
+The `states` table does **not** store `entity_id` as a queryable column — it stores a `metadata_id` foreign key. Always join against `states_meta` to filter or display entity IDs:
+
+```python
+import sqlite3
+conn = sqlite3.connect('/homeassistant/home-assistant_v2.db')
+cur = conn.cursor()
+cur.execute('''
+    SELECT sm.entity_id, s.state, s.last_updated_ts
+    FROM states s
+    JOIN states_meta sm ON s.metadata_id = sm.metadata_id
+    WHERE sm.entity_id LIKE ?
+    ORDER BY s.last_updated_ts DESC
+''', ('%entity_name%',))
+```
+
+### HA deduplicates state changes
+
+HA does **not** create a new `states` row when a device sends the same value it already holds. If an MQTT device broadcasts the same DP value twice (e.g., a sensor re-reporting an active error), only the first transition to that value appears in the DB. Subsequent identical values are silently dropped by the state machine.
+
+Implication: a single HA state entry can represent multiple real-world events if they all produce the same entity state.
+
+### HA host timezone
+
+The HA host runs in **Mountain Daylight Time (MDT, UTC-6)**. All `datetime.datetime.fromtimestamp()` calls on the host return MDT local time. When converting between Tuya API millisecond timestamps and local display times, use MDT as the local reference.
+
+---
+
+## Tuya / Xtend Tuya
+
+### Xtend Tuya architecture (two managers)
+
+Xtend Tuya runs two parallel device managers:
+
+| Manager | Auth | Endpoint | Role |
+|---------|------|----------|------|
+| `tuya_iot` | HMAC-SHA256 (`access_id` / `access_secret`) | `openapi.tuyaus.com` | Device commands |
+| `tuya_sharing` | AES-GCM (`CustomerApi`, `X-*` headers) | `apigw.tuyaus.com` | Real-time MQTT state |
+
+Neither manager implements operation log retrieval. All state comes from real-time MQTT pushes only.
+
+### Tuya OpenAPI signing (no nonce)
+
+The `TuyaOpenAPI` signing algorithm does **not** include a nonce — it is not in the string-to-sign and not in the request headers. The correct signature string is:
+
+```
+ACCESS_ID + access_token + timestamp_ms + str_to_sign
+```
+
+Where `str_to_sign` is:
+```
+METHOD\n
+SHA256(body)\n
+\n                        ← empty header line
+/path?key1=val1&key2=val2  ← params sorted by key
+```
+
+### Extended DPs are MQTT-only — not in Tuya cloud logs
+
+Tuya device log API (`GET /v1.0/devices/{id}/logs?type=7`) only captures DPs defined in the official product category specification (typically DP IDs 1–23). Manufacturer-extended DPs (IDs 100+) are **never stored in Tuya's cloud log system** — they are only available:
+- In real-time via the MQTT push from `tuya_sharing`
+- In the HA recorder (if the entity is not excluded)
+
+Always verify which DPs an entity uses before assuming Tuya API log history is available for it.
+
+### relay_status entity maps to infrared safety errors
+
+For this device class (`msp` — smart pet toilet, model NEO-B), `relay_status` (DP 105) acts as an error flag rather than a power relay:
+
+| Value | Meaning |
+|-------|---------|
+| `1` | Normal |
+| `2` | Bottom infrared anti-pinch triggered |
+
+See `docs/Tuya-Research.md` for full device DP mapping and confirmed error correlation.
+
+### Secrets must never appear in docs or git
+
+API keys, access secrets, tokens, passwords, and local keys must **never** be written into any Markdown document or any file tracked by git. Use placeholders (`<ACCESS_ID>`, `<API_KEY>`, etc.) or reference `secrets.yaml` instead.
