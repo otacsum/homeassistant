@@ -64,6 +64,28 @@ template:
       data:
         percentage: '{{percentage}}'
 
+- binary_sensor:
+  - unique_id: cat_litter_anti_pinch
+    name: "Cat Litter Anti-Pinch"
+    device_class: problem
+    state: "{{ is_state('select.cat_litter_relay_status', '2') }}"
+    icon: >
+      {% if is_state('select.cat_litter_relay_status', '2') %}
+        mdi:alert-circle
+      {% else %}
+        mdi:check-circle
+      {% endif %}
+  - unique_id: cat_litter_anti_pinch_door
+    name: "Cat Litter Box Drawer Sensor"
+    device_class: door
+    state: "{{ is_state('select.cat_litter_relay_status', '2') }}"
+    icon: >
+      {% if is_state('select.cat_litter_relay_status', '2') %}
+        mdi:door-open
+      {% else %}
+        mdi:door-closed
+      {% endif %}
+
 input_boolean:
   bedroom_sunrise_start:
     name: Bedroom Sunrise Start

@@ -136,6 +136,35 @@ The bedroom dimmer's firmware minimum is **raw 20** (2%). The entity reports `mi
 - Changes to the HomeKit filter require a **full HA restart** to take effect
 - After restart, verify the entity was assigned a HomeKit AID in `.storage/homekit.<entry_id>.aids`
 
+### device_class: door → Contact Sensor (not a Door tile)
+
+`binary_sensor` entities with `device_class: door` map to **HAP Contact Sensor** (service 0x80, accessory category: Sensor). HomeKit's Door category (12) is reserved for motorised door openers/closers. These sensors:
+
+- Appear in the Home app's **Sensors** section, not as a door tile
+- Issue notifications as `"[Name] is Open"` / `"[Name] is Closed"`
+- Do **not** have a tap-and-hold tile for notification settings
+
+To enable activity notifications for a contact sensor:
+> Home app → **···** (top right) → **Home Settings** → **Sensors** → [sensor] → **Activity Notifications**
+
+### HomeKit aids/iids storage
+
+- `homekit.<entry_id>.aids` — maps internal entity key → AID (accessory ID). Template entities are keyed as `template.binary_sensor.<unique_id>` (not by entity_id).
+- `homekit.<entry_id>.iids` — maps AID → HAP service/characteristic instance IDs. An entry here confirms the accessory is actively being served.
+- `homekit.<entry_id>.state` — tracks `config_version` (increments whenever accessories change) and paired client UUIDs.
+- New accessories appear in aids/iids after a full HA restart. If an iOS client doesn't show them, go to Home app → ··· → Home Settings → Sensors (contact sensors will be listed there).
+
+### SCP not available on HA host
+
+`scp` is not supported — the SSH server does not expose the SFTP subsystem. Transfer files via stdin redirect instead:
+
+```bash
+ssh homeassistant "cat > /tmp/script.py" < /local/script.py
+ssh homeassistant "python3 /tmp/script.py"
+```
+
+Heredoc-over-SSH also fails for multi-line Python (zsh quote issues). Always write scripts to a local file first, upload via stdin redirect, then run remotely.
+
 ---
 
 ## Documentation
@@ -296,6 +325,49 @@ For this device class (`msp` — smart pet toilet, model NEO-B), `relay_status` 
 | `2` | Bottom infrared anti-pinch triggered |
 
 See `docs/Tuya-Research.md` for full device DP mapping and confirmed error correlation.
+
+### Tuya shadow API
+
+The shadow endpoint stores the **most recent value + millisecond timestamp** for every DP:
+
+```bash
+# From a script running on the HA host:
+GET /v2.0/cloud/thing/{device_id}/shadow/properties
+GET /v2.0/cloud/thing/{device_id}/shadow/properties?codes=relay_status,work_state
+```
+
+- Returns all DPs (or a filtered subset) with `dp_id`, `code`, `value`, and `time` (ms).
+- Timestamps are precise to the millisecond — useful for correlating events from the Tuya app log against DP transitions.
+- The shadow stores only the **final** state, not the full history. If a DP transitions A → B → A rapidly, the shadow will show A with the timestamp of the last transition.
+- Shadow property **history** endpoints (`/v2.0/cloud/thing/{id}/shadow/properties/history` etc.) all return error 1108 (permission denied) on the US endpoint. HA recorder is the only history source for extended DPs.
+
+### relay_status door anti-pinch is sub-second and undetectable
+
+Both the bottom anti-pinch and door anti-pinch route through `relay_status` (DP105):
+
+| Event | Trigger value | Duration | HA detectable |
+|-------|--------------|----------|--------------|
+| Bottom infrared anti-pinch | `"2"` | ~2 hrs (manual clear) | ✅ Yes |
+| Door anti-pinch | Unknown (likely `"3"`) | Sub-second (auto-clear) | ❌ No |
+
+The door anti-pinch self-clears before HA's MQTT consumer can write a state change. The shadow timestamp confirms DP105 was updated at the exact door event time; the final value stored was `"1"` (normal), meaning the transient trigger value was never captured by HA. See `docs/Tuya-Research.md` § 14 for full analysis.
+
+### Tuya API helper scripts
+
+Saved at `/root/homeassistant/scripts/`. Both scripts read credentials automatically from the HA config entry — no manual credential setup needed.
+
+| Script | Use case |
+|--------|----------|
+| `tuya_shadow.py <DEVICE_ID> [DATE] [DATE]` | Show current shadow state (all DPs, sorted by timestamp) + type-7 log history for a date range |
+| `tuya_thing_model.py <DEVICE_ID> [codes]` | Show device thing model (all services, properties with types/ranges, events, actions) + optionally current shadow for specific code names |
+
+```bash
+# Example: inspect relay_status and work_state current values
+python3 /root/homeassistant/scripts/tuya_thing_model.py ebf32ecd372cf16d81xske relay_status,work_state
+
+# Example: shadow + logs for a specific date
+python3 /root/homeassistant/scripts/tuya_shadow.py ebf32ecd372cf16d81xske 2026-04-09
+```
 
 ### Secrets must never appear in docs or git
 

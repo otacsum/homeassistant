@@ -628,24 +628,42 @@ The select entity has no constrained options list; it accepts any raw DP value. 
 
 ### Conclusion
 
-> **The April 11 "door anti-pinch" and April 9 "bottom infrared anti-pinch" are distinct event types and map to different DPs.**
+> **Both anti-pinch types map to the same DP — `relay_status` (DP105) — but with different trigger values and durations.**
 
-| Event | DP | HA Entity | Detectable in HA |
-|-------|----|-----------|-----------------|
-| Bottom infrared anti-pinch | DP105 `relay_status` = `"2"` | `select.cat_litter_relay_status` | ✅ Yes |
-| Door anti-pinch | Unknown — NOT DP105 | Unknown — no active entity captures it | ❌ No |
+The Tuya cloud shadow API revealed the deciding clue:
 
-### What Is the Door Anti-Pinch DP?
+```
+relay_status  dp_id=105  value="1"  time=2026-04-11 07:07:49.597 (local)
+```
 
-The door anti-pinch did not produce any observable HA state change in any of the 12 cat_litter entities tracked in the entity registry. The most likely candidates:
+**relay_status was last updated at 07:07:49.597 MDT** — matching the Tuya app's door anti-pinch log entry to the millisecond. The shadow stores only the most recent state; the current value is "1" (normal), meaning relay_status returned to "1" at that timestamp.
 
-- **`sensor.cat_litter_data_identification` (DP110)** — disabled by integration, zero recorder history. During cleaning cycles this DP cycles through values including "Standby" and "Cleaning". It may also emit a transient "Door Anti-Pinch" value that clears immediately and is invisible because the entity is disabled.
-- **An entirely different DP** not currently exposed by Xtend Tuya — the device may send a manufacturer-specific DP outside the 101–110 range that the integration ignores.
+| Event | DP | Trigger value | Duration | HA detectable |
+|-------|----|---------------|----------|---------------|
+| Bottom infrared anti-pinch (Apr 9) | DP105 `relay_status` | `"2"` (confirmed) | ~2 hrs | ✅ Yes — persists long enough for HA to capture |
+| Door anti-pinch (Apr 11) | DP105 `relay_status` | Unknown (likely `"3"`) | Sub-second | ❌ No — clears before HA processes it |
 
-### Implication for Tuya-Plan.md
+### Why Door Anti-Pinch Is Invisible to HA
 
-The implementation plan (`docs/Tuya-Plan.md`) covers detection of the **bottom anti-pinch only** (via `relay_status → "2"`). The door anti-pinch is currently **not detectable** in Home Assistant without additional investigation.
+The device sent relay_status via MQTT at 07:07:49. The sequence was almost certainly:
+
+1. `relay_status → "3"` (or similar) — door anti-pinch triggered
+2. `relay_status → "1"` — auto-cleared within milliseconds
+3. Tuya cloud shadow: captured final state `"1"` at 07:07:49.597
+4. HA MQTT consumer: received only the final `"1"` (same as current state → no recorder entry)
+
+The bottom anti-pinch persisted for ~2 hours, so HA captured both the trigger and the clear. The door anti-pinch self-clears in under a second — faster than HA's event loop can write a state change.
+
+### Confirmation from Tuya API
+
+- **Type 7 logs (Apr 9–11):** 16 entries — all excretion-related DPs. `relay_status` never appears (it is an extended DP 101–110, invisible to the log API regardless of value).
+- **Shadow API:** relay_status timestamp = 07:07:49 MDT ← exact match to the Tuya app event.
+- **v2.0 thing model:** `relay_status` (DP105) is typed as `enum` with Chinese name "状态详情" (Status Details), confirming it carries multiple state values beyond just 1/2.
+
+### Implication for Cat-Litter-Anti-Pinch-Alert.md
+
+The implementation plan (`docs/Cat-Litter-Anti-Pinch-Alert.md`) covers detection of the **bottom anti-pinch** (relay_status → "2"), which persists long enough for HA to capture. The door anti-pinch, while on the same DP, is currently **not detectable** due to sub-second self-clearing.
 
 To detect door anti-pinch in a future session:
-1. Enable `sensor.cat_litter_data_identification` (DP110) and monitor during a cleaning cycle
-2. Enable Xtend Tuya debug logging (`logger: xtend_tuya: debug`) and capture the next door anti-pinch event to identify the raw DP code and value
+1. Enable Xtend Tuya debug logging (`logger: xtend_tuya: debug`) during a cleaning cycle — should log every MQTT DP value received, capturing the transient trigger value
+2. Once the trigger value is confirmed, use a Node-RED MQTT listener (or AppDaemon) that reacts within the same event loop tick rather than relying on HA state changes
