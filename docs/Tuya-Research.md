@@ -583,3 +583,69 @@ automation:
             Anti-pinch error cleared.
             Was triggered for {{ (as_timestamp(now()) - as_timestamp(trigger.from_state.last_changed)) | int // 60 }} minutes.
 ```
+
+
+---
+
+## Section 14 — Door Anti-Pinch vs Bottom Anti-Pinch Verification (April 11, 2026)
+
+### Event Under Investigation
+
+The Tuya app showed a **"door anti-pinch triggered!"** entry at **07:07:49 MDT, April 11, 2026**, occurring approximately 4 minutes after a cat visit (excretion logged at 07:03:31 MDT), during the subsequent auto-cleaning cycle.
+
+### Verification Method
+
+Three independent data sources were checked for any DP change at 07:07:49 ±5 min:
+
+1. **HA recorder** — queried all `cat_litter` entity state changes for all of April 11
+2. **Tuya API type 7 logs** — queried full April 11 UTC window via `/v1.0/devices/{DEVICE_ID}/logs?type=7`
+3. **Tuya device shadow** — retrieved all current DP values via `/v2.0/cloud/thing/{DEVICE_ID}/shadow/properties`
+
+### Findings
+
+#### HA Recorder — April 11 cat_litter state changes
+
+| Time (MDT) | Entity | Value |
+|------------|--------|-------|
+| 00:00:02 | `sensor.cat_litter_number_of_excretion` | 0.0 (midnight reset) |
+| 07:03:31 | `sensor.cat_litter_number_of_excretion` | 1.0 |
+| 07:03:31 | `sensor.cat_litter_cat_weight` | 5.1 kg |
+| 07:03:31 | `sensor.cat_litter_duration_of_excretion` | 120 sec |
+| ~~07:07:49~~ | ~~`select.cat_litter_relay_status`~~ | ~~No change~~ |
+| 07:57:36 | `sensor.cat_litter_number_of_excretion` | 2.0 |
+| 07:57:36 | `sensor.cat_litter_cat_weight` | 5.2 kg |
+| 07:57:36 | `sensor.cat_litter_duration_of_excretion` | 49 sec |
+
+**`select.cat_litter_relay_status` had zero state updates on April 11** — last update was April 9 at 09:31:41 MDT (state = "1", normal).
+
+#### Tuya API Type 7 Logs — April 11
+
+7 entries returned for the full day; all are excretion-related DPs at 07:03 and 07:57 MDT. **Zero entries at 07:07:49 or nearby.** This is consistent with the finding from Section 13 that standard API type 7 logs do not capture extended DPs (101–110).
+
+#### relay_status (DP105) — Full History Check
+
+The select entity has no constrained options list; it accepts any raw DP value. With no entries for April 11, relay_status was never updated by any MQTT message that day. The door anti-pinch event **did not** cause relay_status to change to any value (including a hypothetical "3").
+
+### Conclusion
+
+> **The April 11 "door anti-pinch" and April 9 "bottom infrared anti-pinch" are distinct event types and map to different DPs.**
+
+| Event | DP | HA Entity | Detectable in HA |
+|-------|----|-----------|-----------------|
+| Bottom infrared anti-pinch | DP105 `relay_status` = `"2"` | `select.cat_litter_relay_status` | ✅ Yes |
+| Door anti-pinch | Unknown — NOT DP105 | Unknown — no active entity captures it | ❌ No |
+
+### What Is the Door Anti-Pinch DP?
+
+The door anti-pinch did not produce any observable HA state change in any of the 12 cat_litter entities tracked in the entity registry. The most likely candidates:
+
+- **`sensor.cat_litter_data_identification` (DP110)** — disabled by integration, zero recorder history. During cleaning cycles this DP cycles through values including "Standby" and "Cleaning". It may also emit a transient "Door Anti-Pinch" value that clears immediately and is invisible because the entity is disabled.
+- **An entirely different DP** not currently exposed by Xtend Tuya — the device may send a manufacturer-specific DP outside the 101–110 range that the integration ignores.
+
+### Implication for Tuya-Plan.md
+
+The implementation plan (`docs/Tuya-Plan.md`) covers detection of the **bottom anti-pinch only** (via `relay_status → "2"`). The door anti-pinch is currently **not detectable** in Home Assistant without additional investigation.
+
+To detect door anti-pinch in a future session:
+1. Enable `sensor.cat_litter_data_identification` (DP110) and monitor during a cleaning cycle
+2. Enable Xtend Tuya debug logging (`logger: xtend_tuya: debug`) and capture the next door anti-pinch event to identify the raw DP code and value
