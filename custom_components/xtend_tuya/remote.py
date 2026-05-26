@@ -101,10 +101,10 @@ async def async_setup_entry(
         for device_id in device_ids:
             if hub_device := hass_data.manager.device_map.get(device_id):
                 if hub_device.category in IR_HUB_CATEGORY_LIST:
-                    hub_information: (
-                        XTIRHubInformation | None
-                    ) = await XTEventLoopProtector.execute_out_of_event_loop_and_return(
-                        hass_data.manager.get_ir_hub_information, hub_device
+                    hub_information: XTIRHubInformation | None = (
+                        await XTEventLoopProtector.execute_out_of_event_loop_and_return(
+                            hass_data.manager.get_ir_hub_information, hub_device
+                        )
                     )
                     if hub_information is None:
                         continue
@@ -147,11 +147,8 @@ async def async_setup_entry(
         device_ids = [*device_map]
         for device_id in device_ids:
             if device := hass_data.manager.device_map.get(device_id):
-                if (
-                    category_descriptions
-                    := XTEntityDescriptorManager.get_category_descriptors(
-                        supported_descriptors, device.category
-                    )
+                if category_descriptions := XTEntityDescriptorManager.get_category_descriptors(
+                    supported_descriptors, device.category
                 ):
                     externally_managed_dpcodes = (
                         XTEntityDescriptorManager.get_category_keys(
@@ -221,7 +218,11 @@ class XTRemoteEntity(XTEntity, RemoteEntity):  # type: ignore
         description: XTRemoteEntityDescription,
     ) -> None:
         """Init XT remote."""
-        super(XTRemoteEntity, self).__init__(device, device_manager)
+        super(XTRemoteEntity, self).__init__(
+            device=device,
+            device_manager=device_manager,  # type: ignore
+            description=description,
+        )
         self.entity_description = description  # type: ignore
         self.device = device
         self.device_manager = device_manager

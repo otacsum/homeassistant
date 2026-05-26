@@ -89,11 +89,8 @@ async def async_setup_entry(
         device_ids = [*device_map]
         for device_id in device_ids:
             if device := hass_data.manager.device_map.get(device_id):
-                if (
-                    category_descriptions
-                    := XTEntityDescriptorManager.get_category_descriptors(
-                        supported_descriptors, device.category
-                    )
+                if category_descriptions := XTEntityDescriptorManager.get_category_descriptors(
+                    supported_descriptors, device.category
                 ):
                     externally_managed_dpcodes = (
                         XTEntityDescriptorManager.get_category_keys(
@@ -121,7 +118,9 @@ async def async_setup_entry(
                                 externally_managed_dpcodes,
                             )
                             and (
-                                definition := get_default_definition(device, description.key)
+                                definition := get_default_definition(
+                                    device, description.key
+                                )
                             )
                         )
                     )
@@ -139,7 +138,9 @@ async def async_setup_entry(
                                 externally_managed_dpcodes,
                             )
                             and (
-                                definition := get_default_definition(device, description.key)
+                                definition := get_default_definition(
+                                    device, description.key
+                                )
                             )
                         )
                     )
@@ -164,7 +165,12 @@ class XTSirenEntity(XTEntity, TuyaSirenEntity):
         definition: TuyaSirenDefinition,
     ) -> None:
         """Init XT Siren."""
-        super(XTSirenEntity, self).__init__(device, device_manager, description)
+        super(XTSirenEntity, self).__init__(
+            device=device,
+            device_manager=device_manager,  # type: ignore
+            description=description,
+            definition=definition,
+        )
         super(XTEntity, self).__init__(
             device=device,
             device_manager=device_manager,  # type: ignore

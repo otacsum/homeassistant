@@ -1,5 +1,14 @@
 from __future__ import annotations
 
+from typing import Any
+from paho.mqtt import client as mqtt
+from paho.mqtt.reasoncodes import (
+    ReasonCode as mqtt_ReasonCode,
+)
+from paho.mqtt.properties import (
+    Properties as mqtt_Properties,
+)
+
 from ....lib.tuya_iot import (
     TuyaOpenMQ,
 )
@@ -11,6 +20,11 @@ from .xt_tuya_iot_openapi import (
 )
 import custom_components.xtend_tuya.multi_manager.managers.tuya_iot.xt_tuya_iot_manager as man
 import custom_components.xtend_tuya.multi_manager.managers.tuya_iot.ipc.xt_tuya_iot_ipc_manager as ipc_man
+from ....const import (
+    LOGGER,
+    XTDeviceWatcherCategory,
+    XTDeviceWatcherSpecialDevice,
+)
 
 
 class XTIOTTuyaMQConfig(TuyaMQConfig):
@@ -33,3 +47,23 @@ class XTIOTOpenMQ(TuyaOpenMQ):
             link_id=link_id,
         )
         self.manager = manager
+
+    def _on_connect(
+        self,
+        mqttc: mqtt.Client,
+        user_data: Any,
+        flags,
+        rc: mqtt_ReasonCode,
+        properties: mqtt_Properties | None = None,
+    ):
+        if rc == 0:
+            for key, value in self.mq_config.source_topic.items():
+                error, mid = mqttc.subscribe(value)
+                if self.manager is not None and error:
+                    self.manager.multi_manager.device_watcher.report_message(
+                        XTDeviceWatcherSpecialDevice.NOT_LINKED_TO_A_DEVICE,
+                        f"[IOT] Subscribed to topic: {value=} => {error=} {mid=}",
+                        XTDeviceWatcherCategory.MQTT,
+                    )
+        else:
+            LOGGER.error(f"[{self.class_id} MQTT] connect failed with rc={rc}")

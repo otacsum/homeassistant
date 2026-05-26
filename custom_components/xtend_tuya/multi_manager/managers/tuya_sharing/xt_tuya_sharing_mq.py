@@ -1,5 +1,6 @@
 from __future__ import annotations
 import json
+import uuid
 from typing import Any
 from tuya_sharing.mq import (
     SharingMQ,
@@ -11,6 +12,8 @@ from paho.mqtt import client as mqtt
 import custom_components.xtend_tuya.multi_manager.managers.tuya_sharing.xt_tuya_sharing_manager as sm
 from ....const import (
     LOGGER,
+    XTDeviceWatcherCategory,
+    XTDeviceWatcherSpecialDevice,
 )
 
 # from paho.mqtt.enums import (
@@ -27,6 +30,13 @@ from ....const import (
 # )
 from urllib.parse import urlsplit
 
+class XTMQConfig(SharingMQConfig):
+    def __init__(self, mqConfigResponse: dict[str, Any] = {}) -> None:
+        super().__init__(mqConfigResponse=mqConfigResponse)
+        self.raw_response = mqConfigResponse
+    
+    def __repr__(self) -> str:
+        return f"{self.raw_response}"
 
 class XTSharingMQ(SharingMQ):
     # This block will be useful when we'll use Paho MQTT 3.x or above
@@ -61,13 +71,19 @@ class XTSharingMQ(SharingMQ):
         if device is None:
             return
         self.device.append(device)
-        self.subscribe_to_mqtt_topics(dev_id)
-    
+        self.subscribe_to_mqtt_topics(device)
+
     def un_subscribe_device(self, dev_id: str, support_local: bool):
         topic1 = self.subscribe_topic(dev_id, True)
         topic2 = self.subscribe_topic(dev_id, False)
         if self.client is not None:
             self.client.unsubscribe([topic1, topic2])
+        else:
+            self.manager.multi_manager.device_watcher.report_message(
+                dev_id,
+                f"Could not unsubscribe to topics: {topic1=} {topic2=}",
+                XTDeviceWatcherCategory.MQTT,
+            )
 
     def _start(self, mq_config: SharingMQConfig) -> mqtt.Client:
         # mqttc = mqtt.Client(callback_api_version=mqtt_CallbackAPIVersion.VERSION2, client_id=mq_config.client_id)
@@ -96,9 +112,7 @@ class XTSharingMQ(SharingMQ):
                 self.shutting_down = True
                 LOGGER.warning("Unexpected disconnection. Reconnecting...")
                 self.manager.refresh_mq()
-        else:
-            LOGGER.debug("disconnect")
-    
+
     def _on_message(self, mqttc: mqtt.Client, user_data: Any, msg: mqtt.MQTTMessage):
         msg_dict = json.loads(msg.payload.decode("utf8"))
 
@@ -107,30 +121,76 @@ class XTSharingMQ(SharingMQ):
         for listener in self.message_listeners:
             listener(msg_dict)
     
-    def subscribe_to_mqtt_topics(self, dev_id: str) -> None:
-        topic1 = self.subscribe_topic(dev_id, True)
-        topic2 = self.subscribe_topic(dev_id, False)
+    def _on_subscribe(self, mqttc: mqtt.Client, user_data: Any, mid, granted_qos):
+        #LOGGER.debug(f"[SHARING] on_subscribe: {user_data=} {mid=} {granted_qos=}")
+        pass
+
+    def _get_mqtt_config(self) -> SharingMQConfig:
+        link_id = f"tuya-device-sharing-sdk-python.{uuid.uuid1()}"
+        response = self.api.post("/v1.0/m/life/ha/access/config", None,
+                                 {"linkId": link_id})
+        if (response.get("success"), False) is False:
+            raise Exception("get mqtt config error.")
+
+        return XTMQConfig(response)
+
+    def subscribe_to_mqtt_topics(self, device: CustomerDevice) -> None:
+        topic1 = self.subscribe_topic(device.id, True)
+        topic2 = self.subscribe_topic(device.id, False)
         if self.client is not None:
-            self.client.subscribe([(topic1, 0), (topic2, 0)])
+            error, mid = self.client.subscribe((topic1, 0))
+            if error:
+                self.manager.multi_manager.device_watcher.report_message(
+                    device.id,
+                    f"[SHARING] Subscribed to topics: {topic1=} {error=} {mid=}",
+                    XTDeviceWatcherCategory.MQTT,
+                )
+            error, mid = self.client.subscribe((topic2, 0))
+            if error:
+                self.manager.multi_manager.device_watcher.report_message(
+                    device.id,
+                    f"[SHARING] Subscribed to topics: {topic2=} {error=} {mid=}",
+                    XTDeviceWatcherCategory.MQTT,
+                )
+        else:
+            self.manager.multi_manager.device_watcher.report_message(
+                device.id,
+                f"[SHARING] Could not subscribe to topics: {topic1=} {topic2=}",
+                XTDeviceWatcherCategory.MQTT,
+            )
 
     def _on_connect(self, mqttc: mqtt.Client, user_data: Any, flags, rc):
         if rc == 0:
             if self.mq_config is None:
                 return
             for owner_id in self.owner_ids:
-                mqttc.subscribe(self.mq_config.owner_topic.format(ownerId=owner_id))
-            batch_size = 10
-            for i in range(0, len(self.device), batch_size):
-                batch_devices = self.device[i:i + batch_size]
-                topics_to_subscribe = []
-                for dev in batch_devices:
-                    dev_id = dev.id
-                    topic_str = self.subscribe_topic(dev_id, False)
-                    topics_to_subscribe.append((topic_str, 0))  # 指定主题和qos=0
-                    topic_str = self.subscribe_topic(dev_id, True)
-                    topics_to_subscribe.append((topic_str, 0))  # 指定主题和qos=0
+                owner_topic = self.mq_config.owner_topic.format(ownerId=owner_id)
+                error, mid = mqttc.subscribe(owner_topic)
+                if error:
+                    self.manager.multi_manager.device_watcher.report_message(
+                            XTDeviceWatcherSpecialDevice.NOT_LINKED_TO_A_DEVICE,
+                            f"[SHARING] Subscribed to owner topic: {owner_topic=} {error=} {mid=}",
+                            XTDeviceWatcherCategory.MQTT,
+                        )
+            for dev in self.device:
+                self.subscribe_to_mqtt_topics(dev)
+            # batch_size = 10
+            # for i in range(0, len(self.device), batch_size):
+            #     batch_devices = self.device[i : i + batch_size]
+            #     topics_to_subscribe = []
+            #     for dev in batch_devices:
+            #         dev_id = dev.id
+            #         topic_str = self.subscribe_topic(dev_id, False)
+            #         topics_to_subscribe.append((topic_str, 0))  # 指定主题和qos=0
+            #         topic_str = self.subscribe_topic(dev_id, True)
+            #         topics_to_subscribe.append((topic_str, 0))  # 指定主题和qos=0
 
-                if topics_to_subscribe:
-                    mqttc.subscribe(topics_to_subscribe)
+            #     if topics_to_subscribe:
+            #         mqttc.subscribe(topics_to_subscribe)
+            #         self.manager.multi_manager.device_watcher.report_message(
+            #             XTDeviceWatcherSpecialDevice.NOT_LINKED_TO_A_DEVICE,
+            #             f"[SHARING] Subscribed to topics: {topics_to_subscribe=}",
+            #             XTDeviceWatcherCategory.MQTT,
+            #         )
         else:
             super()._on_connect(mqttc, user_data, flags, rc)

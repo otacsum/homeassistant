@@ -3,15 +3,16 @@
 from __future__ import annotations
 from typing import cast
 from dataclasses import dataclass
+from tuya_device_handlers.definition.alarm_control_panel import (
+    TuyaAlarmControlPanelDefinition,
+    get_default_definition,
+)
 from homeassistant.const import (
     Platform,
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from .util import (
-    restrict_descriptor_category,
-)
 from .ha_tuya_integration.tuya_integration_imports import (
     TuyaAlarmEntity,
     TuyaAlarmControlPanelEntityDescription,
@@ -38,17 +39,19 @@ class XTAlarmEntityDescription(TuyaAlarmControlPanelEntityDescription):
         device: XTDevice,
         device_manager: MultiManager,
         description: XTAlarmEntityDescription,
+        definition: TuyaAlarmControlPanelDefinition,
     ) -> XTAlarmEntity:
         return XTAlarmEntity(
             device=device,
             device_manager=device_manager,
             description=XTAlarmEntityDescription(**description.__dict__),
+            definition=definition,
         )
 
 
 # All descriptions can be found here:
 # https://developer.tuya.com/en/docs/iot/standarddescription?id=K9i5ql6waswzq
-ALARM: dict[str, tuple[XTAlarmEntityDescription, ...]] = {}
+ALARM: dict[str, XTAlarmEntityDescription] = {}
 
 
 async def async_setup_entry(
@@ -63,8 +66,8 @@ async def async_setup_entry(
 
     supported_descriptors, externally_managed_descriptors = cast(
         tuple[
-            dict[str, tuple[XTAlarmEntityDescription, ...]],
-            dict[str, tuple[XTAlarmEntityDescription, ...]],
+            dict[str, XTAlarmEntityDescription],
+            dict[str, XTAlarmEntityDescription],
         ],
         XTEntityDescriptorManager.get_platform_descriptors(
             ALARM,
@@ -83,50 +86,47 @@ async def async_setup_entry(
             return
         for device_id in device_ids:
             if device := hass_data.manager.device_map.get(device_id, None):
-                if (
-                    category_descriptions
-                    := XTEntityDescriptorManager.get_category_descriptors(
+                if category_descriptions := cast(
+                    XTAlarmEntityDescription,
+                    XTEntityDescriptorManager.get_category_descriptors(
                         supported_descriptors, device.category
-                    )
+                    ),
                 ):
                     externally_managed_dpcodes = (
                         XTEntityDescriptorManager.get_category_keys(
                             externally_managed_descriptors.get(device.category)
                         )
                     )
-                    if restrict_dpcode is not None:
-                        category_descriptions = cast(
-                            tuple[XTAlarmEntityDescription, ...],
-                            restrict_descriptor_category(
-                                category_descriptions, [restrict_dpcode]
-                            ),
+                    if XTEntity.supports_description(
+                        device,
+                        this_platform,
+                        category_descriptions,
+                        True,
+                        externally_managed_dpcodes,
+                    ) and (definition := get_default_definition(device)):
+                        entities.append(
+                            XTAlarmEntity.get_entity_instance(
+                                device=device,
+                                device_manager=hass_data.manager,
+                                description=category_descriptions,
+                                definition=definition,
+                            )
                         )
-                    entities.extend(
-                        XTAlarmEntity.get_entity_instance(
-                            description, device, hass_data.manager
+                    if XTEntity.supports_description(
+                        device,
+                        this_platform,
+                        category_descriptions,
+                        False,
+                        externally_managed_dpcodes,
+                    ) and (definition := get_default_definition(device)):
+                        entities.append(
+                            XTAlarmEntity.get_entity_instance(
+                                device=device,
+                                device_manager=hass_data.manager,
+                                description=category_descriptions,
+                                definition=definition,
+                            )
                         )
-                        for description in category_descriptions
-                        if XTEntity.supports_description(
-                            device,
-                            this_platform,
-                            description,
-                            True,
-                            externally_managed_dpcodes,
-                        )
-                    )
-                    entities.extend(
-                        XTAlarmEntity.get_entity_instance(
-                            description, device, hass_data.manager
-                        )
-                        for description in category_descriptions
-                        if XTEntity.supports_description(
-                            device,
-                            this_platform,
-                            description,
-                            False,
-                            externally_managed_dpcodes,
-                        )
-                    )
         async_add_entities(entities)
 
     hass_data.manager.register_device_descriptors(this_platform, supported_descriptors)
@@ -143,20 +143,42 @@ class XTAlarmEntity(XTEntity, TuyaAlarmEntity):
         device: XTDevice,
         device_manager: MultiManager,
         description: XTAlarmEntityDescription,
+        definition: TuyaAlarmControlPanelDefinition,
     ) -> None:
-        super(XTAlarmEntity, self).__init__(device, device_manager, description)
-        super(XTEntity, self).__init__(device, device_manager, description)  # type: ignore
+        super(XTAlarmEntity, self).__init__(
+            device=device,
+            device_manager=device_manager,  # type: ignore
+            description=description,
+            definition=definition,
+        )
+        super(XTEntity, self).__init__(
+            device=device,
+            device_manager=device_manager,  # type: ignore
+            description=description,
+            definition=definition,
+        )
 
     @staticmethod
     def get_entity_instance(
-        description: XTAlarmEntityDescription,
         device: XTDevice,
         device_manager: MultiManager,
+        description: XTAlarmEntityDescription,
+        definition: TuyaAlarmControlPanelDefinition,
     ) -> XTAlarmEntity:
         if hasattr(description, "get_entity_instance") and callable(
             getattr(description, "get_entity_instance")
         ):
-            return description.get_entity_instance(device, device_manager, description)
+            return description.get_entity_instance(
+                device=device,
+                device_manager=device_manager,
+                description=description,
+                definition=definition,
+            )
         return XTAlarmEntity(
-            device, device_manager, XTAlarmEntityDescription(**description.__dict__)
+            device=device,
+            device_manager=device_manager,
+            description=XTAlarmEntityDescription(
+                **description.__dict__,
+            ),
+            definition=definition,
         )

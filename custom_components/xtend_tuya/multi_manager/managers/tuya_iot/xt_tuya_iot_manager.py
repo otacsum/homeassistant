@@ -11,7 +11,13 @@ from ....lib.tuya_iot import (
     TuyaDeviceManager,
 )
 from ....lib.tuya_iot.device import (
+    BIZCODE_ONLINE,
+    BIZCODE_OFFLINE,
+    BIZCODE_NAME_UPDATE,
+    BIZCODE_DPNAME_UPDATE,
     BIZCODE_BIND_USER,
+    BIZCODE_DELETE,
+    PROTOCOL_DEVICE_REPORT,
 )
 from ....lib.tuya_iot.tuya_enums import (
     AuthType,
@@ -28,6 +34,8 @@ from ....const import (
     XTLockingMechanism,
     TUYA_TEST_API_BAD_RETURN_CODES,
     XTDeviceWatcherCategory,
+    BIZCODE_EVENT_NOTIFY,
+    XT_DEVICE_EVENT_NOTIFY_DPCODE,
 )
 from ...shared.shared_classes import (
     XTDevice,
@@ -68,7 +76,10 @@ class XTIOTDeviceManager(TuyaDeviceManager):
     device_map: XTDeviceMap = XTDeviceMap({}, XTDeviceSourcePriority.TUYA_IOT)
 
     def __init__(
-        self, multi_manager: MultiManager, api: XTIOTOpenAPI, non_user_api: XTIOTOpenAPI
+        self,
+        multi_manager: MultiManager,
+        api: XTIOTOpenAPI,
+        non_user_api: XTIOTOpenAPI,
     ) -> None:
         mq = XTIOTOpenMQ(api, self)
         super().__init__(api, mq)
@@ -91,7 +102,7 @@ class XTIOTDeviceManager(TuyaDeviceManager):
         self.home_manager = home_manager
 
     def forward_message_to_multi_manager(self, msg: dict):
-        self.multi_manager.on_message(MESSAGE_SOURCE_TUYA_IOT, msg)
+        self.multi_manager.on_message(msg, MESSAGE_SOURCE_TUYA_IOT)
 
     def refresh_mq(self):
         self.mq.stop()
@@ -270,14 +281,53 @@ class XTIOTDeviceManager(TuyaDeviceManager):
     def _on_device_other(self, device_id: str, biz_code: str, data: dict[str, Any]):
         self.multi_manager.device_watcher.report_message(
             device_id,
-            f"[{MESSAGE_SOURCE_TUYA_IOT}]On device other: {biz_code} <=> {data}",
+            f"[{MESSAGE_SOURCE_TUYA_IOT}]On device other: {biz_code=} {data=}",
             XTDeviceWatcherCategory.MQTT,
         )
+        if biz_code not in [
+            BIZCODE_ONLINE,
+            BIZCODE_OFFLINE,
+            BIZCODE_NAME_UPDATE,
+            BIZCODE_DPNAME_UPDATE,
+            BIZCODE_BIND_USER,
+            BIZCODE_DELETE,
+            BIZCODE_EVENT_NOTIFY,
+        ]:
+            LOGGER.warning(
+                f"Received unknown BizCode type: {biz_code} with data {data}, please report this to the developer"
+            )
         if biz_code == BIZCODE_BIND_USER:
             self.multi_manager.add_device_by_id(data["devId"])
             return None
-
-        return super()._on_device_other(device_id, biz_code, data)
+        elif biz_code == BIZCODE_EVENT_NOTIFY:
+            data_value: dict[str, Any] = {}
+            biz_data: dict[str, Any] = data.get("bizData", {})
+            if event_type := biz_data.get("etype"):
+                data_value["event_type"] = event_type
+            if event_data := biz_data.get("edata"):
+                data_value["event_data"] = event_data
+            if event_time := data.get("ts"):
+                data_value["event_time"] = event_time
+            if data_value and event_time is not None:
+                self.multi_manager.on_message(
+                    msg={
+                        "protocol": PROTOCOL_DEVICE_REPORT,
+                        "data": {
+                            "devId": device_id,
+                            "status": [
+                                {
+                                    "code": str(XT_DEVICE_EVENT_NOTIFY_DPCODE),
+                                    "t": event_time,
+                                    "value": json.dumps(data_value),
+                                }
+                            ],
+                        },
+                        "t": event_time,
+                    },
+                    source=MESSAGE_SOURCE_TUYA_IOT,
+                )
+        else:
+            super()._on_device_other(device_id, biz_code, data)
 
     def add_device_by_id(self, device_id: str):
         device_ids = [device_id]
@@ -294,15 +344,17 @@ class XTIOTDeviceManager(TuyaDeviceManager):
             for listener in self.device_listeners:
                 listener.add_device(device)
 
-    def _on_device_report(self, device_id: str, status: list):
+    def _on_device_report(self, device_id: str, status: list[dict[str, Any]]):
         self.multi_manager.device_watcher.report_message(
             device_id,
-            f"[{MESSAGE_SOURCE_TUYA_IOT}]On device report: {status}",
+            f"[{MESSAGE_SOURCE_TUYA_IOT}]On device report: {status=}",
             XTDeviceWatcherCategory.MQTT,
         )
         device = self.device_map.get(device_id, None)
         if not device:
             return
+        updated_status_properties = []
+        dp_timestamps = {}
         status_new = self.multi_manager.convert_device_report_status_list(
             device_id,
             status,
@@ -318,9 +370,42 @@ class XTIOTDeviceManager(TuyaDeviceManager):
             if "code" in item and "value" in item:
                 code = item["code"]
                 value = item["value"]
+                self.multi_manager.device_watcher.report_message(
+                    device.id,
+                    f"Status update before conversion: {code} => {value}",
+                    XTDeviceWatcherCategory.STATUS_CHANGES,
+                    device,
+                    False,
+                    code,
+                )
+                value = device.apply_dpcode_strategy(code, value, self.multi_manager)
+                self.multi_manager.device_watcher.report_message(
+                    device.id,
+                    f"Status update after conversion: {code} => {value}",
+                    XTDeviceWatcherCategory.STATUS_CHANGES,
+                    device,
+                    False,
+                    code,
+                )
                 device.status[code] = value
+                updated_status_properties.append(code)
+                if t := item.get("t"):
+                    dp_timestamps[code] = t
 
-        super()._on_device_report(device_id, [])
+        self._update_device(
+            device=device,
+            updated_status_properties=updated_status_properties,
+            dp_timestamps=dp_timestamps,
+        )
+
+    def _update_device(
+        self,
+        device: XTDevice,
+        updated_status_properties: list[str] | None = None,
+        dp_timestamps: dict | None = None,
+    ):
+        for listener in self.device_listeners:
+            listener.update_device(device, updated_status_properties, dp_timestamps)
 
     def _update_device_list_info_cache(self, devIds: list[str]):
         response = self.get_device_list_info(devIds)
@@ -342,8 +427,8 @@ class XTIOTDeviceManager(TuyaDeviceManager):
         response = self.api.get(f"/v2.0/cloud/thing/{device.id}/shadow/properties")
         response2 = self.api.get(f"/v2.0/cloud/thing/{device.id}/model")
         if not response.get("success") or not response2.get("success"):
-            LOGGER.warning(f"Response1: {response}")
-            LOGGER.warning(f"Response2: {response2}")
+            LOGGER.warning(f"Response1: {response}: {device.id=}")
+            LOGGER.warning(f"Response2: {response2}: {device.id=}")
 
         if response2.get("success", False):
             result = response2.get("result", {})

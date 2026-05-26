@@ -94,7 +94,11 @@ class XTVacuumEntity(XTEntity, TuyaVacuumEntity):
         definition: TuyaVacuumDefinition,
     ) -> None:
         """Init Tuya vacuum."""
-        super(XTVacuumEntity, self).__init__(device, device_manager)
+        super(XTVacuumEntity, self).__init__(
+            device=device,
+            device_manager=device_manager,  # type: ignore
+            definition=definition,
+        )
         super(XTEntity, self).__init__(
             device=device,
             device_manager=device_manager,  # type: ignore

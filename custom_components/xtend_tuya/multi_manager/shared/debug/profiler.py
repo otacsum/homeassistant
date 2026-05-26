@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 try:
-    import yappi
+    import yappi # type: ignore
 except Exception:
     pass
 import cProfile

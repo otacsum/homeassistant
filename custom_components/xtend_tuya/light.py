@@ -266,7 +266,12 @@ class XTLightEntity(XTEntity, TuyaLightEntity):
         description: XTLightEntityDescription,
         definition: TuyaLightDefinition,
     ) -> None:
-        super(XTLightEntity, self).__init__(device, device_manager, description)
+        super(XTLightEntity, self).__init__(
+            device=device,
+            device_manager=device_manager,  # type: ignore
+            description=description,
+            definition=definition,
+        )
         super(XTEntity, self).__init__(
             device=device,
             device_manager=device_manager,  # type: ignore

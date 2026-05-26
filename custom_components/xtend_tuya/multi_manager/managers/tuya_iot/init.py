@@ -12,6 +12,7 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from ....lib.tuya_iot import (
     AuthType,
+    TuyaTokenInfo,
 )
 from .xt_tuya_iot_openapi import (
     XTIOTOpenAPI,
@@ -138,22 +139,30 @@ class XTTuyaIOTDeviceManagerInterface(XTDeviceManagerInterface):
             )
             return None
         auth_type = AuthType(config_entry.options[CONF_AUTH_TYPE])
-        api = XTIOTOpenAPI(
-            endpoint=config_entry.options[CONF_ENDPOINT_OT],
-            access_id=config_entry.options[CONF_ACCESS_ID],
-            access_secret=config_entry.options[CONF_ACCESS_SECRET],
-            auth_type=auth_type,
-            non_user_specific_api=False,
-        )
+        token_info = TuyaTokenInfo()
         non_user_api = XTIOTOpenAPI(
             endpoint=config_entry.options[CONF_ENDPOINT_OT],
             access_id=config_entry.options[CONF_ACCESS_ID],
             access_secret=config_entry.options[CONF_ACCESS_SECRET],
+            shared_token_info=token_info,
             auth_type=auth_type,
             non_user_specific_api=True,
         )
+        api = XTIOTOpenAPI(
+            endpoint=config_entry.options[CONF_ENDPOINT_OT],
+            access_id=config_entry.options[CONF_ACCESS_ID],
+            access_secret=config_entry.options[CONF_ACCESS_SECRET],
+            shared_token_info=token_info,
+            auth_type=auth_type,
+            non_user_specific_api=False,
+        )
         api.set_dev_channel("hass")
         try:
+            connect_non_user_api = (
+                await XTEventLoopProtector.execute_out_of_event_loop_and_return(
+                    non_user_api.connect
+                )
+            )
             if auth_type == AuthType.CUSTOM:
                 connect_user_api = (
                     await XTEventLoopProtector.execute_out_of_event_loop_and_return(
@@ -172,11 +181,6 @@ class XTTuyaIOTDeviceManagerInterface(XTDeviceManagerInterface):
                         config_entry.options[CONF_APP_TYPE],
                     )
                 )
-            connect_non_user_api = (
-                await XTEventLoopProtector.execute_out_of_event_loop_and_return(
-                    non_user_api.connect
-                )
-            )
             user_api_valid = (
                 await XTEventLoopProtector.execute_out_of_event_loop_and_return(
                     api.test_validity
@@ -310,8 +314,8 @@ class XTTuyaIOTDeviceManagerInterface(XTDeviceManagerInterface):
     def on_mqtt_stop(self):
         if self.iot_account is None:
             return None
-        if self.iot_account.device_manager.mq:
-            self.iot_account.device_manager.mq.stop()
+        self.iot_account.device_manager.mq.stop()
+        self.iot_account.device_manager.ipc_manager.mq.stop()
 
     def on_post_setup(self):
         if self.iot_account is None:

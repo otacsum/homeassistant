@@ -1,12 +1,15 @@
 from __future__ import annotations
 from typing import NamedTuple, Any, Optional, cast
 from collections import UserDict
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 import copy
 import json
 from enum import StrEnum
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from tuya_sharing.strategy import (
+    strategy as tuya_sharing_strategy,
+)
 from tuya_sharing import (
     CustomerDevice as TuyaDevice,
 )
@@ -29,21 +32,51 @@ from ...const import (
 
 class DeviceWatcher:
     def __init__(self, multi_manager: mm.MultiManager) -> None:
-        self.watched_dev_id: dict[str, XTDeviceWatcherCategory] = {
-            # "bf74848d47bcd0d090ak3g": XTDeviceWatcherCategory.PLATFORM_SENSOR,
+        self.watched_dev_id: dict[
+            str, XTDeviceWatcherCategory | tuple[str, XTDeviceWatcherCategory]
+        ] = {
+            # "eb669c64d4253468bdiisw": XTDeviceWatcherCategory.MQTT | XTDeviceWatcherCategory.PLATFORM_EVENT | XTDeviceWatcherCategory.PLATFORM_CAMERA,
+            # "bf62aed104ff5fa4b2xekz": XTDeviceWatcherCategory.PLATFORM_CAMERA,
+            # "eba792ceaf7c7de77bg0zd": XTDeviceWatcherCategory.MQTT
+            # | XTDeviceWatcherCategory.PLATFORM_EVENT,
+            # "eb8bb5qft7riny17": XTDeviceWatcherCategory.MQTT
+            # | XTDeviceWatcherCategory.PLATFORM_EVENT,
+            # "bfaa30582e4990330f6rrw": (
+            #     "colour_data",
+            #     XTDeviceWatcherCategory.MQTT
+            #     | XTDeviceWatcherCategory.PLATFORM_LIGHT
+            #     | XTDeviceWatcherCategory.STATUS_CHANGES,
+            # ),
+            # "eb7390e135cc5cd63213qg": XTDeviceWatcherCategory.MQTT,
             # "vdevo172985271302839": XTDeviceWatcherCategory.PLATFORM_EVENT | XTDeviceWatcherCategory.VIRTUAL_STATE,
-            # XTDeviceWatcherSpecialDevice.NOT_LINKED_TO_A_DEVICE: XTDeviceWatcherCategory.XT_PERFORMANCE,
+            # "bf022344b6e0cfd5dafh8e": XTDeviceWatcherCategory.MQTT,
+            # XTDeviceWatcherSpecialDevice.NOT_LINKED_TO_A_DEVICE: XTDeviceWatcherCategory.MQTT,
         }
         self.multi_manager = multi_manager
 
     def is_watched(
-        self, dev_id: str, category_list: list[XTDeviceWatcherCategory]
+        self,
+        dev_id: str,
+        category_list: list[XTDeviceWatcherCategory],
+        category_parameter: str | None = None,
     ) -> bool:
         if dev_id not in self.watched_dev_id:
             return False
         for category in category_list:
-            if category in self.watched_dev_id[dev_id]:
-                return True
+            if isinstance(self.watched_dev_id[dev_id], tuple):
+                watched_category_paramter, watched_category = self.watched_dev_id[
+                    dev_id
+                ]
+                if (
+                    category_parameter is not None
+                    and category_parameter != watched_category_paramter
+                ):
+                    return False
+                if category in watched_category:
+                    return True
+            else:
+                if category in self.watched_dev_id[dev_id]:
+                    return True
         return False
 
     def report_message(
@@ -53,8 +86,13 @@ class DeviceWatcher:
         category: XTDeviceWatcherCategory,
         device: XTDevice | None = None,
         print_stack: bool = False,
+        category_parameter: str | None = None,
     ):
-        if self.is_watched(dev_id, XTDeviceWatcherCategory.get_unique_flags(category)):
+        if self.is_watched(
+            dev_id,
+            XTDeviceWatcherCategory.get_unique_flags(category),
+            category_parameter,
+        ):
             if dev_id in self.multi_manager.device_map:
                 managed_device = self.multi_manager.device_map[dev_id]
                 LOGGER.warning(
@@ -212,6 +250,8 @@ class XTDevice(TuyaDevice):
     class XTDevicePreference(StrEnum):
         IS_A_COVER_DEVICE = "IS_A_COVER_DEVICE"
         CLIMATE_DEVICE_ENTITY = "CLIMATE_DEVICE_ENTITY"
+        COVER_DEVICE_ENTITY = "COVER_DEVICE_ENTITY"
+        LOCK_DEVICE_ENTITY = "LOCK_DEVICE_ENTITY"
         LOCK_MANUAL_UNLOCK_COMMAND = "LOCK_MANUAL_UNLOCK_COMMAND"
         LOCK_GET_SUPPORTED_UNLOCK_TYPES = "LOCK_GET_SUPPORTED_UNLOCK_TYPES"
         LOCK_GET_DOOR_LOCK_PASSWORD_TICKET = "LOCK_GET_DOOR_LOCK_PASSWORD_TICKET"
@@ -227,6 +267,7 @@ class XTDevice(TuyaDevice):
         dptype: TuyaDPType | None = None
         in_status_range: bool = False
         in_function: bool = False
+        in_local_strategy: bool = False
         human_name: str = ""
 
         # From LocalStrategy
@@ -241,6 +282,8 @@ class XTDevice(TuyaDevice):
         unit: str | None = None
         range: list[str] = field(default_factory=list)
         label: list[str] = field(default_factory=list)
+        value_convert: str | None = None
+        config_item: dict[str, Any] = field(default_factory=dict)
         value_descr_dict: dict[str, Any] = field(default_factory=dict)
 
     def __init__(self, **kwargs: Any) -> None:
@@ -306,13 +349,36 @@ class XTDevice(TuyaDevice):
                 setattr(self.original_device, attr, value)
             XTDeviceMap.set_device_key_value_multimap(self.id, attr, value)
 
+    def apply_dpcode_strategy(
+        self, dpcode: str, value: Any, multi_manager: mm.MultiManager | None = None
+    ) -> Any:
+        local_value = value
+        if dpcode_information := self.get_dpcode_information(dpcode=dpcode):
+            strategy_name = dpcode_information.value_convert
+            config_item = dpcode_information.config_item
+            dp_item = (dpcode, value)
+            try:
+                _, new_value = tuya_sharing_strategy.convert(
+                    strategy_name, dp_item, config_item
+                )
+                local_value = new_value
+            except Exception as e:
+                if (
+                    multi_manager is not None
+                    and multi_manager.device_watcher.is_watched(
+                        self.id, [XTDeviceWatcherCategory.STATUS_CHANGES], dpcode
+                    )
+                ):
+                    LOGGER.exception(e)
+        return local_value
+
     @staticmethod
     def from_compatible_device(
         device: Any,
         source: str = "Compatible device",
         device_source_priority: int | None = None,
         keep_synced_with_original: bool = False,
-    ):
+    ) -> XTDevice:
         # If the device is already an XT device return it right away
         if isinstance(device, XTDevice):
             return device
@@ -451,6 +517,8 @@ class XTDevice(TuyaDevice):
 
         if dp_info.dpid is not None:
             if local_strategy := self.local_strategy.get(dp_info.dpid):
+                dp_info.in_local_strategy = True
+                dp_info.value_convert = local_strategy.get("value_convert")
                 if access_mode := local_strategy.get("access_mode"):
                     dp_info.access_mode = access_mode
                     match access_mode:
@@ -467,6 +535,7 @@ class XTDevice(TuyaDevice):
                             dp_info.write_only = True
                             dp_info.read_write = False
                 if config_item := local_strategy.get("config_item"):
+                    dp_info.config_item = config_item
                     if dp_info.dptype is None:
                         if ls_dptype := config_item.get("valueType"):
                             dp_info.dptype = TuyaDPType.try_parse(ls_dptype)
@@ -485,7 +554,75 @@ class XTDevice(TuyaDevice):
                             dp_info.value_descr_dict = value_descr_dict
                         except Exception:
                             pass
-        return dp_info
+
+        # Break the memory links to avoid changes from outside
+        return copy.deepcopy(dp_info)
+
+    def set_dpcode_information(
+        self, new_dpcode_info: XTDevice.XTDeviceDPCodeInformation
+    ) -> bool:
+        value_modified: bool = False
+        cur_dpcode_info = self.get_dpcode_information(
+            dpcode=new_dpcode_info.dpcode, dpid=new_dpcode_info.dpid
+        )
+        if cur_dpcode_info is None:
+            return False
+        new_dpcode_info_dict = asdict(new_dpcode_info)
+        cur_dpcode_info_dict = asdict(cur_dpcode_info)
+        changed_fields: list[str] = []
+        processed_fields: list[str] = []
+        for key in new_dpcode_info_dict:
+            if cur_dpcode_info_dict[key] != new_dpcode_info_dict[key]:
+                changed_fields.append(key)
+        # LOGGER.warning(f"set_dpcode_information: {changed_fields=}")
+        if "dpcode" in changed_fields or "dpid" in changed_fields:
+            LOGGER.warning(
+                f"Changing DPCode or DPId is not yet supported ({self.name} => {cur_dpcode_info.dpcode}({cur_dpcode_info.dpid}) <=> {new_dpcode_info.dpcode}({new_dpcode_info.dpid}))"
+            )
+            return False
+        if cur_dpcode_info.in_status_range:
+            mod_status_range = self.status_range[cur_dpcode_info.dpcode]
+            if "dptype" in changed_fields:
+                mod_status_range.type = new_dpcode_info.dptype
+                value_modified = True
+                if "dptype" not in processed_fields:
+                    processed_fields.append("dptype")
+        if cur_dpcode_info.in_function:
+            mod_function = self.function[cur_dpcode_info.dpcode]
+            if "dptype" in changed_fields:
+                mod_function.type = new_dpcode_info.dptype
+                value_modified = True
+                if "dptype" not in processed_fields:
+                    processed_fields.append("dptype")
+        if cur_dpcode_info.in_local_strategy and cur_dpcode_info.dpid is not None:
+            mod_ls = self.local_strategy[cur_dpcode_info.dpid]
+
+            config_item = mod_ls.get("config_item")
+            if config_item is not None:
+                if "dptype" in changed_fields:
+                    config_item["valueType"] = new_dpcode_info.dptype
+                    value_modified = True
+                    if "dptype" not in processed_fields:
+                        processed_fields.append("dptype")
+
+        for test_field in changed_fields:
+            if test_field not in processed_fields:
+                LOGGER.warning(
+                    f"Unprocessed change for {self.name}({cur_dpcode_info.dpcode}): {test_field}"
+                )
+
+        return value_modified
+
+    @staticmethod
+    def get_empty_local_strategy_dp_id(device: XTDevice) -> int | None:
+        if not hasattr(device, "local_strategy"):
+            return None
+        base_id = 10000
+        while True:
+            if base_id in device.local_strategy:
+                base_id += 1
+                continue
+            return base_id
 
 
 class XTDeviceMap(UserDict[str, XTDevice]):
@@ -530,8 +667,17 @@ class XTDeviceMap(UserDict[str, XTDevice]):
 
 
 class XTTrackedDictionnary(UserDict):
-    def __init__(self, dict: dict | None = None, /, **kwargs):
+    def __init__(
+        self,
+        multi_manager: mm.MultiManager,
+        device: XTDevice,
+        dict: dict | None = None,
+        /,
+        **kwargs,
+    ):
         self.original_dict: dict | None = None
+        self.multi_manager = multi_manager
+        self.device = device
         super().__init__(dict, **kwargs)
         self.original_dict = dict
 
@@ -543,7 +689,14 @@ class XTTrackedDictionnary(UserDict):
             return super().__getitem__(key)
 
     def __setitem__(self, key, item):
-        LOGGER.warning(f"__setitem__: {key} => {item}", stack_info=True)
+        self.multi_manager.device_watcher.report_message(
+            self.device.id,
+            f"Tracked dictionnary SET: {key} => {item}",
+            XTDeviceWatcherCategory.STATUS_CHANGES,
+            self.device,
+            True,
+            key,
+        )
         if self.original_dict is not None:
             super().__setitem__(key, item)
             return self.original_dict.__setitem__(key, item)

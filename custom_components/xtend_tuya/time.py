@@ -82,11 +82,8 @@ async def async_setup_entry(
         device_ids = [*device_map]
         for device_id in device_ids:
             if device := hass_data.manager.device_map.get(device_id):
-                if (
-                    category_descriptions
-                    := XTEntityDescriptorManager.get_category_descriptors(
-                        supported_descriptors, device.category
-                    )
+                if category_descriptions := XTEntityDescriptorManager.get_category_descriptors(
+                    supported_descriptors, device.category
                 ):
                     externally_managed_dpcodes = (
                         XTEntityDescriptorManager.get_category_keys(
@@ -150,7 +147,11 @@ class XTTimeEntity(XTEntity, TimeEntity):  # type: ignore
         description: XTTimeEntityDescription,
     ) -> None:
         """Init XT time."""
-        super().__init__(device, device_manager)
+        super().__init__(
+            device=device,
+            device_manager=device_manager,
+            description=description,
+        )
         self.entity_description = description  # type: ignore
         self.device = device
         self.device_manager = device_manager

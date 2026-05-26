@@ -98,7 +98,7 @@ class XTVirtualStateHandler:
                                 if dp_id := self.multi_manager._read_dpId_from_code(
                                     virtual_state.key, device
                                 ):
-                                    if new_dp_id := self._get_empty_local_strategy_dp_id(
+                                    if new_dp_id := shared.XTDevice.get_empty_local_strategy_dp_id(
                                         device
                                     ):
                                         new_local_strategy = copy.deepcopy(
@@ -143,7 +143,7 @@ class XTVirtualStateHandler:
                                 if dp_id := self.multi_manager._read_dpId_from_code(
                                     virtual_state.key, device
                                 ):
-                                    if new_dp_id := self._get_empty_local_strategy_dp_id(
+                                    if new_dp_id := shared.XTDevice.get_empty_local_strategy_dp_id(
                                         device
                                     ):
                                         new_local_strategy = copy.deepcopy(
@@ -191,7 +191,7 @@ class XTVirtualStateHandler:
                                 if dp_id := self.multi_manager._read_dpId_from_code(
                                     virtual_state.key, device
                                 ):
-                                    if new_dp_id := self._get_empty_local_strategy_dp_id(
+                                    if new_dp_id := shared.XTDevice.get_empty_local_strategy_dp_id(
                                         device
                                     ):
                                         new_local_strategy = copy.deepcopy(
@@ -236,7 +236,7 @@ class XTVirtualStateHandler:
                                 if dp_id := self.multi_manager._read_dpId_from_code(
                                     virtual_state.key, device
                                 ):
-                                    if new_dp_id := self._get_empty_local_strategy_dp_id(
+                                    if new_dp_id := shared.XTDevice.get_empty_local_strategy_dp_id(
                                         device
                                     ):
                                         new_local_strategy = copy.deepcopy(
@@ -272,7 +272,7 @@ class XTVirtualStateHandler:
         device: shared.XTDevice,
         status_in: list[dict[str, Any]],
         source: str | None = None,
-    ) -> list:
+    ) -> list[dict[str, Any]]:
         if not status_in:
             return status_in
         status = copy.deepcopy(status_in)
@@ -358,13 +358,3 @@ class XTVirtualStateHandler:
                             )
                             continue
         return status
-
-    def _get_empty_local_strategy_dp_id(self, device: shared.XTDevice) -> int | None:
-        if not hasattr(device, "local_strategy"):
-            return None
-        base_id = 10000
-        while True:
-            if base_id in device.local_strategy:
-                base_id += 1
-                continue
-            return base_id

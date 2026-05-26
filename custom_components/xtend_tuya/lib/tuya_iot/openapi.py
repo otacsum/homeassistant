@@ -15,6 +15,7 @@ from .tuya_enums import AuthType
 from .version import VERSION
 
 TUYA_ERROR_CODE_TOKEN_INVALID = 1010
+TUYA_ERROR_SIGN_INVALID = 1004
 
 TO_C_CUSTOM_REFRESH_TOKEN_API = "/v1.0/iot-03/users/token/"
 TO_C_SMART_HOME_REFRESH_TOKEN_API = "/v1.0/token/"
@@ -34,8 +35,17 @@ class TuyaTokenInfo:
         platform_url: user region platform url
     """
 
-    def __init__(self, token_response: dict[str, Any] = {}):
+    def __init__(
+        self,
+        token_response: dict[str, Any] = {},
+        shared_token_info: TuyaTokenInfo | None = None,
+    ):
         """Init TuyaTokenInfo."""
+        self.shared_token_info = shared_token_info
+        self.reconnecting = False
+        self.update_token(token_response=token_response)
+
+    def update_token(self, token_response: dict[str, Any] = {}):
         result = cast(dict[str, Any], token_response.get("result", {}))
 
         self.expire_time = (
@@ -46,19 +56,49 @@ class TuyaTokenInfo:
         self.refresh_token = result.get("refresh_token", "")
         self.uid = result.get("uid", "")
         self.success = token_response.get("success", False)
+        self.marked_invalid = False
+        # logger.debug(f"Refreshing TuyaTokenInfo: {token_response} => {self}")
+        if self.shared_token_info is not None:
+            self.shared_token_info.update_token(token_response=token_response)
+
+    def is_reconnecting(self) -> bool:
+        if (
+            self.shared_token_info is not None
+            and self.shared_token_info.is_reconnecting()
+        ):
+            return True
+        return self.reconnecting
+
+    def set_reconnecting(self, is_connecting: bool):
+        self.reconnecting = is_connecting
+        if self.shared_token_info is not None:
+            self.shared_token_info.set_reconnecting(
+                is_connecting=is_connecting,
+            )
 
     def __repr__(self) -> str:
         return f"TuyaTokenInfo(valid: {self.is_valid()}, expire_time: {self.expire_time}, access_token: {self.access_token}, refresh_token: {self.refresh_token}, uid: {self.uid})"
 
     def is_valid(self) -> bool:
         if self.success is False:
+            # logger.debug("OpenAPI is_valid: sucess = False")
             return False
-        
-        now = int(time.time() * 1000)
-        if self.expire_time <= now + 60 * 1000:
+
+        if self.marked_invalid:
+            # logger.debug("OpenAPI is_valid: marked_invalid = True")
+            return False
+
+        expiry_check = int(time.time() * 1000) + 5 * 60 * 1000
+        if self.expire_time <= expiry_check:
+            # logger.debug(
+            #     f"OpenAPI is_valid: expiry check: {self.expire_time} <= {expiry_check}: True"
+            # )
             return False
 
         return True
+
+    def mark_invalid(self) -> None:
+        self.marked_invalid = True
 
 
 class TuyaOpenAPI:
@@ -74,6 +114,7 @@ class TuyaOpenAPI:
         endpoint: str,
         access_id: str,
         access_secret: str,
+        shared_token_info: TuyaTokenInfo,
         auth_type: AuthType = AuthType.SMART_HOME,
         lang: str = "en",
         non_user_specific_api: bool = False,
@@ -101,7 +142,8 @@ class TuyaOpenAPI:
             self.__refresh_path = TO_C_SMART_HOME_REFRESH_TOKEN_API
 
         self.non_user_specific_api = non_user_specific_api
-        self.token_info: TuyaTokenInfo = TuyaTokenInfo()
+        self.token_info = TuyaTokenInfo()  # (shared_token_info=shared_token_info)
+        self.shared_token = shared_token_info
 
         self.dev_channel: str = ""
 
@@ -109,7 +151,6 @@ class TuyaOpenAPI:
         self.__password = ""
         self.__country_code = ""
         self.__schema = ""
-        self.__is_connecting = False
 
     # https://developer.tuya.com/docs/iot/open-api/api-reference/singnature?id=Ka43a5mtx1gsc
     def _calculate_sign(
@@ -177,20 +218,9 @@ class TuyaOpenAPI:
             # logger.debug("Already requesting refresh token, no need to refresh again.")
             return
 
-        self.token_info.access_token = ""
-
-        if self.auth_type == AuthType.CUSTOM:
-            # logger.debug(f"Refreshing access token with refresh token: {path}")
-            response = self.post(
-                TO_C_CUSTOM_REFRESH_TOKEN_API + self.token_info.refresh_token
-            )
-        else:
-            # logger.debug(f"Refreshing access token with refresh token: {path}")
-            response = self.get(
-                TO_C_SMART_HOME_REFRESH_TOKEN_API + self.token_info.refresh_token
-            )
-        # logger.debug(f"Refresh token response: {response}")
-        self.token_info = TuyaTokenInfo(response)
+        if self.reconnect(no_loop=False):
+            # logger.warning(f"Successfully reconnected: {self.token_info}")
+            pass
 
     def set_dev_channel(self, dev_channel: str):
         """Set dev channel."""
@@ -198,10 +228,12 @@ class TuyaOpenAPI:
 
     def test_validity(self) -> bool:
         response = self.get("/v2.0/cloud/space/child")
-        if success := response.get("success", False):
-            if success is False:
-                logger.error(f"Test API validity failed: AuthType: {self.auth_type} <=> {response}")
-            return success is True
+        if response.get("success", False):
+            return True
+        else:
+            logger.error(
+                f"Test API validity failed: AuthType: {self.auth_type} <=> {response}"
+            )
         return False
 
     def connect(
@@ -211,7 +243,7 @@ class TuyaOpenAPI:
         country_code: str = "",
         schema: str = "",
     ) -> dict[str, Any]:
-        self.__is_connecting = True
+        self.token_info.set_reconnecting(is_connecting=True)
         if self.non_user_specific_api:
             return_value = self.connect_non_user_specific()
         else:
@@ -221,7 +253,7 @@ class TuyaOpenAPI:
                 country_code=country_code,
                 schema=schema,
             )
-        self.__is_connecting = False
+        self.token_info.set_reconnecting(is_connecting=False)
         return return_value
 
     def connect_non_user_specific(self) -> dict[str, Any]:
@@ -243,7 +275,7 @@ class TuyaOpenAPI:
             return response
 
         # Cache token info.
-        self.token_info = TuyaTokenInfo(response)
+        self.token_info.update_token(response)
 
         return response
 
@@ -295,7 +327,7 @@ class TuyaOpenAPI:
             return response
 
         # Cache token info.
-        self.token_info = TuyaTokenInfo(response)
+        self.token_info.update_token(response)
 
         return response
 
@@ -303,24 +335,28 @@ class TuyaOpenAPI:
         """Is connect to tuya cloud."""
         return self.token_info.is_valid()
 
-    def reconnect(self) -> bool:
+    def reconnect(self, no_loop: bool = False) -> bool:
         if (
             self.__username != ""
             and self.__password != ""
             and self.__country_code != ""
-            and self.__is_connecting is False
+            and self.token_info.is_reconnecting() is False
         ):
             self.connect(
                 self.__username, self.__password, self.__country_code, self.__schema
             )
-        elif self.__is_connecting is True:
-            wait_time = 0.5
+        elif self.token_info.is_reconnecting() is True and no_loop is False:
+            wait_time = 0.2
             loop_pass = 0
-            # logger.debug("Already connecting to tuya cloud, wait for it to finish.")
-            while self.__is_connecting is True:
+            #logger.debug("Already connecting to tuya cloud, wait for it to finish.")
+            while self.token_info.is_reconnecting() is True:
                 time.sleep(wait_time)
                 loop_pass += 1
-            # logger.debug(f"Wait for connecting to finish. Waited {wait_time * loop_pass} seconds.")
+            if self.token_info.is_valid() is False:
+                return self.reconnect(no_loop=True)
+            # logger.debug(
+            #     f"Waited {wait_time * loop_pass} seconds for reconnection."
+            # )
         return self.is_token_valid()
 
     def __request(
@@ -367,15 +403,23 @@ class TuyaOpenAPI:
 
         time_taken = time.time() - start_time
 
-        if response.ok is False:
+        if response.ok is False or result.get("success", True) is False:
+            # logger.debug(
+            #     f"[IOT API][{time_taken}]Request: {method} {path} PARAMS: {json.dumps(params, ensure_ascii=False, indent=2) if params is not None else ''} BODY: {json.dumps(body, ensure_ascii=False, indent=2) if body is not None else ''}, first_pass={first_pass}, access_token={access_token}"
+            # )
+            # logger.debug(
+            #     f"[IOT API][{time_taken}]Response: {json.dumps(result, ensure_ascii=False, indent=2)}",
+            #     stack_info=True,
+            # )
+            pass
+        if first_pass is False:
             logger.warning(
-                f"[IOT API][{time_taken}]Request: {method} {path} PARAMS: {json.dumps(params, ensure_ascii=False, indent=2) if params is not None else ''} BODY: {json.dumps(body, ensure_ascii=False, indent=2) if body is not None else ''}"
+                f"[IOT API][{time_taken}]SECOND PASS Request: {method} {path} PARAMS: {json.dumps(params, ensure_ascii=False, indent=2) if params is not None else ''} BODY: {json.dumps(body, ensure_ascii=False, indent=2) if body is not None else ''}, first_pass={first_pass}, access_token={access_token}"
             )
             logger.warning(
-                f"[IOT API][{time_taken}]Response: {json.dumps(result, ensure_ascii=False, indent=2)}",
+                f"[IOT API][{time_taken}]SECOND PASS Response: {json.dumps(result, ensure_ascii=False, indent=2)}",
                 stack_info=True,
             )
-            return {}
         else:
             # logger.debug(
             #     f"[IOT API][{time_taken}]Request: {method} {path} PARAMS: {json.dumps(params, ensure_ascii=False, indent=2) if params is not None else ''} BODY: {json.dumps(body, ensure_ascii=False, indent=2) if body is not None else ''}"
@@ -385,8 +429,16 @@ class TuyaOpenAPI:
             # )
             pass
 
-        if result.get("code", -1) == TUYA_ERROR_CODE_TOKEN_INVALID:
-            if first_pass is True and path.startswith(self.__login_path) is False and self.reconnect() is True:
+        if result.get("code", -1) in [
+            TUYA_ERROR_CODE_TOKEN_INVALID,
+            TUYA_ERROR_SIGN_INVALID,
+        ]:
+            self.token_info.mark_invalid()
+            if (
+                first_pass is True
+                and path.startswith(self.__login_path) is False
+                and path.startswith(self.__refresh_path) is False
+            ):
                 return self.__request(method, path, params, body, False)
 
         return result

@@ -129,7 +129,12 @@ class XTHumidifierEntity(XTEntity, TuyaHumidifierEntity):
         description: XTHumidifierEntityDescription,
         definition: TuyaHumidifierDefinition,
     ) -> None:
-        super(XTHumidifierEntity, self).__init__(device, device_manager, description)
+        super(XTHumidifierEntity, self).__init__(
+            device=device,
+            device_manager=device_manager,  # type: ignore
+            description=description,
+            definition=definition,
+        )
         super(XTEntity, self).__init__(
             device=device,
             device_manager=device_manager,  # type: ignore
