@@ -50,3 +50,13 @@
     - service: input_boolean.turn_off
       target:
         entity_id: input_boolean.bedroom_sunrise_start
+
+# Restarts Home Assistant every night at 3:00 AM for routine maintenance
+- alias: Nightly HA Restart
+  description: Restarts Home Assistant every night at 3:00 AM.
+  trigger:
+    - platform: time
+      at: 03:00:00
+  action:
+    - service: homeassistant.restart
+  mode: single
