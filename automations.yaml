@@ -60,3 +60,18 @@
   action:
     - service: homeassistant.restart
   mode: single
+
+# Resets the sunrise trigger boolean and stops the script if HA restarts mid-run
+- alias: "Bedroom Sunrise - Reset on HA Start"
+  description: "Prevents input_boolean.bedroom_sunrise_start from getting stuck ON after an HA restart interrupts a running script."
+  trigger:
+    - platform: homeassistant
+      event: start
+  action:
+    - service: script.turn_off
+      target:
+        entity_id: script.bedroom_sunrise
+    - service: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.bedroom_sunrise_start
+  mode: single
